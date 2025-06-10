@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Undo2, Clock, Edit } from "lucide-react";
+import { CalendarDays, Undo2, Clock, BadgeCheck, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -119,10 +119,16 @@ const BorrowedBooksPage = () => {
                             </div>
                             <div className="flex flex-col col-span-2 justify-between items-start">
                                 <p className="text-sm text-green-400 mb-2 flex flex-row justify-between mt-2 items-baseline">
-                                    {activeUser?.isVerified ? "✔ Verified Student" : "Verification Pending..."}
+                                    {activeUser?.isVerified ? (
+                                        <span className="flex items-center gap-1">
+                                            Verified Student <BadgeCheck color="orange" />
+                                        </span>
+                                    ) : (
+                                        "Verification Pending..."
+                                    )}
                                     <span className="ml-auto">
-                                        <button onClick={handleOpenModal} className="text-sm text-blue-400 mt-2">
-                                            <Edit size={20} />
+                                        <button onClick={handleOpenModal} className="text-sm cursor-pointer text-blue-400 ml-20 mt-2">
+                                            <Pencil size={18} />
                                         </button>
                                     </span>
                                 </p>
@@ -184,45 +190,104 @@ const BorrowedBooksPage = () => {
             {/* Modal for Editing Profile */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <motion.div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-                        <motion.div className="bg-[#1b1e2e] rounded-lg p-6 w-96 shadow-lg" initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }}>
-                            <h2 className="text-xl font-semibold mb-4">Edit Profile</h2>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 overflow-y-auto no-scrollbar">
+                        {/* Animated Backdrop - Glass effect */}
+                        <motion.div
+                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                            onClick={handleCloseModal}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.5 }}
+                        />
+
+                        {/* Animated Modal Content - Glass translucent background */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 100 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 100 }}
+                            transition={{ duration: 0.5, ease: 'easeInOut', delay: 0.2 }}
+                            className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 max-w-md w-full shadow-2xl my-8 max-h-[90vh] no-scrollbar overflow-y-auto"
+                        >
+                            <h2 className="text-2xl font-bold text-white mb-6">Edit Profile</h2>
+
                             {loading ? (
                                 <div className="space-y-4 animate-pulse">
-                                    <div className="h-6 bg-gray-700 rounded w-full"></div>
-                                    <div className="h-6 bg-gray-700 rounded w-full"></div>
-                                    <div className="h-6 bg-gray-700 rounded w-full"></div>
+                                    <div className="h-6 bg-white/20 rounded w-full"></div>
+                                    <div className="h-6 bg-white/20 rounded w-full"></div>
+                                    <div className="h-6 bg-white/20 rounded w-full"></div>
                                 </div>
                             ) : (
                                 <form onSubmit={handleSubmit}>
                                     <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-300">Name</label>
-                                        <input type="text" name="name" value={userData.name} onChange={handleChange} className="mt-2 px-4 py-2 w-full rounded-lg bg-[#2c3145] border border-[#444]" />
+                                        <label className="block text-sm font-medium text-white/90 mb-2">Name</label>
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            value={userData.name}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300"
+                                        />
                                     </div>
                                     <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-300">Email</label>
-                                        <input type="email" name="email" value={userData.email} onChange={handleChange} className="mt-2 px-4 py-2 w-full rounded-lg bg-[#2c3145] border border-[#444]" />
+                                        <label className="block text-sm font-medium text-white/90 mb-2">Email</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={userData.email}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300"
+                                        />
                                     </div>
                                     <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-300">University ID</label>
-                                        <input type="text" name="uniId" value={userData.uniId} onChange={handleChange} className="mt-2 px-4 py-2 w-full rounded-lg bg-[#2c3145] border border-[#444]" />
+                                        <label className="block text-sm font-medium text-white/90 mb-2">University ID</label>
+                                        <input
+                                            type="text"
+                                            name="uniId"
+                                            value={userData.uniId}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300"
+                                        />
                                     </div>
                                     <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-300">Avatar</label>
-                                        <input type="file" name="avatar" onChange={handleFileChange} className="mt-2 px-4 py-2 w-full rounded-lg bg-[#2c3145] border border-[#444]" />
+                                        <label className="block text-sm font-medium text-white/90 mb-2">Avatar</label>
+                                        <input
+                                            type="file"
+                                            name="avatar"
+                                            onChange={handleFileChange}
+                                            className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30 file:cursor-pointer transition-all duration-300"
+                                        />
                                     </div>
-                                    <div className="mb-4">
-                                        <label className="block text-sm font-medium text-gray-300">University ID Document</label>
-                                        <input type="file" name="uniId" onChange={handleFileChange} className="mt-2 px-4 py-2 w-full rounded-lg bg-[#2c3145] border border-[#444]" />
+                                    <div className="mb-6">
+                                        <label className="block text-sm font-medium text-white/90 mb-2">University ID Document</label>
+                                        <input
+                                            type="file"
+                                            name="uniId"
+                                            onChange={handleFileChange}
+                                            className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30 file:cursor-pointer transition-all duration-300"
+                                        />
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <button type="button" onClick={handleCloseModal} className="text-gray-400 hover:text-white">Close</button>
-                                        <button type="submit" className="bg-blue-500 px-4 py-2 rounded-lg text-white">Save Changes</button>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={handleCloseModal}
+                                            className="flex-1 cursor-pointer bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300"
+                                        >
+                                            Close
+                                        </button>
+                                        <button
+                                            type="submit"
+                                            className="flex-1 cursor-pointer bg-[#F79B72] hover:bg-orange-500 text-black px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-orange-400/30"
+                                        >
+                                            Save Changes
+                                        </button>
                                     </div>
                                 </form>
                             )}
                         </motion.div>
-                    </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </main>

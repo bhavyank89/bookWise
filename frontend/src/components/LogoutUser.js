@@ -11,7 +11,7 @@ function LogoutUser({ setIsLogin }) {
         console.log("logout clicked");
         localStorage.removeItem('auth-token');
         setIsLogin(false);
-        navigate('/');
+        navigate('/landing');
     };
 
     return (
