@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Toaster } from "react-hot-toast";
 
 import Login from "@/components/Login";
 import App from "@/components/App";
@@ -13,7 +20,28 @@ import Profile from "@/components/Profile";
 import UploadPDF from "@/components/UploadPDF";
 import Navbar from "@/components/Navbar";
 import Landing from "@/components/Landing";
-import { AnimatePresence } from "framer-motion";
+
+// Animation variants
+const fadeVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+  exit: { opacity: 0, y: -20, transition: { duration: 0.3, ease: "easeIn" } },
+};
+
+// JS-compatible motion wrapper
+function MotionWrapper({ children }) {
+  return (
+    <motion.div
+      variants={fadeVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      className="w-full h-full"
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 function MainApp() {
   const [isLogin, setIsLogin] = useState(false);
@@ -22,18 +50,24 @@ function MainApp() {
 
   return (
     <div className="bg-[url('/background.jpg')] min-h-screen bg-cover bg-no-repeat">
-      {isLogin && <Navbar setIsLogin={setIsLogin} setActiveUser={setActiveUser} activeUser={activeUser}/>}
-      <AnimatePresence mode="wait">
+      {isLogin && (
+        <Navbar
+          setIsLogin={setIsLogin}
+          setActiveUser={setActiveUser}
+          activeUser={activeUser}
+        />
+      )}
+      <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<App />} />
-          <Route path="/landing" element={<Landing />} />
-          <Route path="/login" element={<Login setIsLogin={setIsLogin} />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/bookdetails/:id" element={<BookDetails />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/uploadPDF" element={<UploadPDF />} />
+          <Route path="/" element={<MotionWrapper><App /></MotionWrapper>} />
+          <Route path="/landing" element={<MotionWrapper><Landing /></MotionWrapper>} />
+          <Route path="/login" element={<MotionWrapper><Login setIsLogin={setIsLogin} /></MotionWrapper>} />
+          <Route path="/signup" element={<MotionWrapper><Signup /></MotionWrapper>} />
+          <Route path="/dashboard" element={<MotionWrapper><Dashboard /></MotionWrapper>} />
+          <Route path="/bookdetails/:id" element={<MotionWrapper><BookDetails /></MotionWrapper>} />
+          <Route path="/search" element={<MotionWrapper><SearchPage /></MotionWrapper>} />
+          <Route path="/profile" element={<MotionWrapper><Profile /></MotionWrapper>} />
+          <Route path="/uploadPDF" element={<MotionWrapper><UploadPDF /></MotionWrapper>} />
         </Routes>
       </AnimatePresence>
     </div>
@@ -43,6 +77,7 @@ function MainApp() {
 export default function Home() {
   return (
     <Router>
+      <Toaster position="top-right" />
       <MainApp />
     </Router>
   );

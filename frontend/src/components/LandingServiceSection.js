@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Menu, X, Monitor, Truck, Shield, BookOpen, ArrowRight, Search, Upload, Bell, UserCheck, Database, Zap, Github, Instagram, Linkedin, User, UserCog } from 'lucide-react';
+import {
+    Menu, X, Monitor, Truck, Shield, BookOpen, ArrowRight, Search,
+    Upload, Bell, UserCheck, Database, Zap, Github, Instagram, Linkedin,
+    User, UserCog
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function LandingServiceSection() {
     const services = [
@@ -13,8 +18,14 @@ function LandingServiceSection() {
         { icon: <Bell className="w-8 h-8 text-pink-500" />, title: "Communication & Notifications", description: "Toast notifications for actions and email notifications for borrow approvals and due dates." },
         { icon: <Monitor className="w-8 h-8 text-pink-500" />, title: "Responsive Interactive UI", description: "Framer Motion animations, dark mode support, skeleton loaders, and smooth user experience." }
     ];
+
     return (
-        <div>
+        <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}
+        >
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-[#F79B72] flex items-center justify-center gap-2">
@@ -27,21 +38,42 @@ function LandingServiceSection() {
                         Delivering exceptional digital library experiences tailored to every reader and administrator.
                     </p>
                 </div>
-                <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+
+                {/* Services Grid with staggered motion */}
+                <motion.div
+                    className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+                    variants={{
+                        hidden: {},
+                        show: {
+                            transition: {
+                                staggerChildren: 0.15
+                            }
+                        }
+                    }}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true }}
+                >
                     {services.map((service, idx) => (
-                        <div
+                        <motion.div
                             key={idx}
-                            className="bg-gray-50 rounded-2xl p-6 shadow-md hover:shadow-lg hover:scale-105 hover:-translate-y-1 transition-all duration-300 transform"
+                            variants={{
+                                hidden: { opacity: 0, y: 30 },
+                                show: { opacity: 1, y: 0 }
+                            }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                            whileHover={{ scale: 1.05, y: -5 }}
+                            className="bg-gray-50 rounded-2xl p-6 shadow-md cursor-pointer transition-all"
                         >
                             <div className="mb-4">{service.icon}</div>
                             <h3 className="text-xl font-semibold mb-3 text-gray-800">{service.title}</h3>
                             <p className="text-sm text-gray-600 mb-4 leading-relaxed">{service.description}</p>
-                        </div>
+                        </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
-        </div>
-    )
+        </motion.div>
+    );
 }
 
-export default LandingServiceSection
+export default LandingServiceSection;

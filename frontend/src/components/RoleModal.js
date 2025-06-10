@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import { X, User, UserCog } from 'lucide-react';
 
 function RoleModal({ closeModal, setSelectedRole, selectedRole, handleContinue, isModalOpen, setIsModalOpen }) {
@@ -6,14 +7,24 @@ function RoleModal({ closeModal, setSelectedRole, selectedRole, handleContinue, 
         <>
             {isModalOpen && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <div
+                    {/* Animated Backdrop */}
+                    <motion.div
                         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
                         onClick={closeModal}
-                    ></div>
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                    />
 
-                    {/* Modal Content */}
-                    <div className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                    {/* Animated Modal Content */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 100 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 100 }}
+                        transition={{ duration: 0.5, ease: 'easeInOut', delay: 0.2 }}
+                        className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 max-w-md w-full shadow-2xl"
+                    >
                         {/* Close button */}
                         <button
                             onClick={closeModal}
@@ -94,11 +105,11 @@ function RoleModal({ closeModal, setSelectedRole, selectedRole, handleContinue, 
                                 Continue
                             </button>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
             )}
         </>
-    )
+    );
 }
 
-export default RoleModal
+export default RoleModal;
