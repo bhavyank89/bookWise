@@ -20,7 +20,10 @@ const PORT = process.env.PORT || 4000;
 connectToMongoose();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'http://localhost:3000', // ✅ Only allow your frontend origin
+    credentials: true // ✅ Allow cookies and headers to be sent
+}));
 app.use(express.json());
 
 // Routes
