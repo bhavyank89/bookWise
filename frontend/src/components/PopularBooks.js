@@ -34,7 +34,7 @@ const PopularBooks = ({ loading, books, handleBookClick }) => {
     const noBooks = !loading && (!books || books.length === 0);
 
     return (
-        <section>
+        <section className="mb-8">
             <h3 className="text-xl font-semibold mb-6">Popular Books</h3>
 
             {noBooks ? (

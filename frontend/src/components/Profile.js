@@ -97,9 +97,9 @@ const BorrowedBooksPage = () => {
 
     return (
         <main className="min-h-screen text-white px-8 py-10 font-sans">
-            <motion.div className="grid md:grid-cols-2 gap-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+            <motion.div className="grid lg:grid-cols-2 gap-10" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
                 {/* Left Card */}
-                <motion.div className="bg-[#1b1e2e] rounded-2xl p-6 w-full max-w-md mx-auto shadow-lg" initial={{ x: -100 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
+                <motion.div className="bg-[#1b1e2e] h-fit rounded-2xl p-6 w-full max-w-md mx-auto shadow-lg" initial={{ x: -100 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
                     {loading ? (
                         <div className="space-y-4 animate-pulse">
                             <div className="flex justify-center items-center space-x-4">
@@ -151,7 +151,7 @@ const BorrowedBooksPage = () => {
                 {/* Right Column */}
                 <motion.div initial={{ x: 100 }} animate={{ x: 0 }} transition={{ duration: 0.5 }}>
                     <h2 className="text-xl font-semibold mb-4">Borrowed Books</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="grid h-96 no-scrollbar lg:mr-12  overflow-y-auto sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 gap-6">
                         {loading ? (
                             <div className="grid gap-4">
                                 {Array.from({ length: 4 }).map((_, index) => (
@@ -166,7 +166,7 @@ const BorrowedBooksPage = () => {
                             <p className="text-gray-400">No books borrowed yet.</p>
                         ) : (
                             borrowedBooks.map((book, index) => (
-                                <motion.div key={book._id || index} className="bg-[#1b1e2e] rounded-xl p-4 shadow hover:shadow-lg transition-all duration-300" whileHover={{ scale: 1.05 }}>
+                                <motion.div key={book._id || index} className="bg-[#1b1e2e] h-fit rounded-xl p-4 shadow hover:shadow-lg transition-all duration-300" whileHover={{ scale: 1.05 }}>
                                     <img src={book.cover || "/origin-red.png"} alt={book.title} className="rounded-lg w-full h-48 object-cover mb-3" />
                                     <h3 className="font-semibold text-sm">{book.title || "Untitled"}</h3>
                                     <p className="text-xs text-gray-400">{book.category || "Unknown"}</p>

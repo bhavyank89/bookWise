@@ -141,7 +141,7 @@ const Dashboard = () => {
                             </div>
 
                             {/* Book Image */}
-                            <div className="group relative w-[276px] h-[385px] mx-auto">
+                            <div className="group xs:ml-2 lg:ml-80 mb-8 relative w-[276px] h-[385px] mx-auto">
                                 <img
                                     onClick={() => handleBookClick(featuredBook._id)}
                                     src={featuredBook.thumbnailCloudinary?.secure_url || "/origin-blue.png"}

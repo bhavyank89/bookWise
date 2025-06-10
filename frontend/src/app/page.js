@@ -43,6 +43,15 @@ function MotionWrapper({ children }) {
   );
 }
 
+function MarginTop({ children }) {
+  return (
+    <div className="pt-20 lg:pt-40">
+      {children}
+    </div>
+  );
+}
+
+
 function MainApp() {
   const [isLogin, setIsLogin] = useState(false);
   const [activeUser, setActiveUser] = useState({});
@@ -63,10 +72,10 @@ function MainApp() {
           <Route path="/landing" element={<MotionWrapper><Landing /></MotionWrapper>} />
           <Route path="/login" element={<MotionWrapper><Login setIsLogin={setIsLogin} /></MotionWrapper>} />
           <Route path="/signup" element={<MotionWrapper><Signup /></MotionWrapper>} />
-          <Route path="/dashboard" element={<MotionWrapper><Dashboard /></MotionWrapper>} />
-          <Route path="/bookdetails/:id" element={<MotionWrapper><BookDetails /></MotionWrapper>} />
-          <Route path="/search" element={<MotionWrapper><SearchPage /></MotionWrapper>} />
-          <Route path="/profile" element={<MotionWrapper><Profile /></MotionWrapper>} />
+          <Route path="/dashboard" element={<MotionWrapper><MarginTop><Dashboard /></MarginTop></MotionWrapper>} />
+          <Route path="/bookdetails/:id" element={<MotionWrapper><MarginTop><BookDetails /></MarginTop></MotionWrapper>} />
+          <Route path="/search" element={<MotionWrapper><MarginTop><SearchPage /></MarginTop></MotionWrapper>} />
+          <Route path="/profile" element={<MotionWrapper><MarginTop><Profile /></MarginTop></MotionWrapper>} />
           <Route path="/uploadPDF" element={<MotionWrapper><UploadPDF /></MotionWrapper>} />
         </Routes>
       </AnimatePresence>
