@@ -70,16 +70,20 @@ function Login({ setIsLogin = () => { } }) {
         navigate("/signup");
     };
 
-    const onSubmit = async (values) => {
+    const onSubmit = async (data) => {
         setIsLoading(true);
+
         try {
             const response = await fetch("http://localhost:4000/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(values),
                 credentials: "include",
+                body: JSON.stringify({
+                    ...data,
+                    role: "User", // ✅ Required for role-based login
+                }),
             });
 
             const json = await response.json();
@@ -87,8 +91,7 @@ function Login({ setIsLogin = () => { } }) {
             if (response.ok && json.success) {
                 localStorage.setItem("auth-token", json.token);
                 setIsLogin(true);
-                toast.success("Login successful!");
-                navigate("/dashboard");
+                navigate('/dashboard');
             } else {
                 toast.error(json.error || "Login failed!");
             }
@@ -101,12 +104,11 @@ function Login({ setIsLogin = () => { } }) {
 
     return (
         <div className="min-h-screen">
-
             {/* Navigation Bar */}
             <nav className="sticky top-0 z-50 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between items-center h-16">
-                        <div onClick={()=>{navigate('/landing')}} className="flex items-center cursor-pointer space-x-3">
+                        <div onClick={() => { navigate('/landing') }} className="flex items-center cursor-pointer space-x-3">
                             <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
                                 <BookOpen size={20} className="text-white" />
                             </div>
@@ -132,10 +134,10 @@ function Login({ setIsLogin = () => { } }) {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
-                        <div className=" bg-[#0d0f17]/90 backdrop-blur-md rounded-2xl p-8 shadow-2xl text-white">
+                        <div className="bg-[#0d0f17]/90 backdrop-blur-md rounded-2xl p-8 shadow-2xl text-white">
                             {/* Header */}
                             <div className="text-center mb-8">
-                                <h1 className="text-3xl font-boldtext-white mb-2">
+                                <h1 className="text-3xl font-bold text-white mb-2">
                                     📚 BookWise
                                 </h1>
                                 <h2 className="text-xl font-semibold text-white mb-2">
@@ -202,7 +204,6 @@ function Login({ setIsLogin = () => { } }) {
                                             </FormItem>
                                         )}
                                     />
-
 
                                     <Button
                                         type="submit"

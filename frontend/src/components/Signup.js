@@ -92,6 +92,7 @@ function Signup() {
         formData.append("password", values.password);
         formData.append("avatar", avatarFile);
         formData.append("universityID", universityIDFile);
+        formData.append("role", "User");
 
         try {
             setIsSubmitting(true);

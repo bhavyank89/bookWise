@@ -30,9 +30,8 @@ const SavedBookSchema = new mongoose.Schema({
 
 const UserSchema = new mongoose.Schema(
   {
-    books: [BorrowedBookSchema], // Borrowed books
-
-    savedBooks: [SavedBookSchema], // 📌 NEW: Saved ebooks or wishlist
+    books: [BorrowedBookSchema],
+    savedBooks: [SavedBookSchema],
 
     avatar: {
       type: Object,
@@ -47,18 +46,27 @@ const UserSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, 'Email is required'],
-      unique: true,
       lowercase: true,
       trim: true,
     },
 
+    role: {
+      type: String,
+      enum: ['User', 'Admin'],
+      default: 'User',
+    },
+
     uniId: {
       type: String,
-      required: [true, 'University ID is required'],
+      required: function () {
+        return this.role === 'User';
+      },
     },
     uniIdDoc: {
       type: Object,
-      required: [true, 'University ID is required'],
+      required: function () {
+        return this.role === 'User';
+      },
     },
 
     password: {
@@ -79,6 +87,11 @@ const UserSchema = new mongoose.Schema(
 );
 
 ///////////////////////////////////////////////////////
+// 📌 Compound unique index on { email, role }
+///////////////////////////////////////////////////////
+UserSchema.index({ email: 1, role: 1 }, { unique: true });
+
+///////////////////////////////////////////////////////
 // 📌 Auto-calculate dueDate if not provided
 ///////////////////////////////////////////////////////
 UserSchema.pre('save', function (next) {
@@ -95,20 +108,16 @@ UserSchema.pre('save', function (next) {
 ///////////////////////////////////////////////////////
 UserSchema.methods.returnBook = async function (bookId) {
   const bookIndex = this.books.findIndex(b => b.book.toString() === bookId.toString());
-
   if (bookIndex === -1) throw new Error('Book not found in user record');
 
-  this.books.splice(bookIndex, 1); // Remove from user
+  this.books.splice(bookIndex, 1);
   await this.save();
 
-  // Update Book model
   const book = await Book.findById(bookId);
   if (!book) throw new Error('Book not found');
 
   book.available += 1;
-
-  // Remove user from book.borrowers
-  book.borrowers = book.borrowers.filter(borrowerId => borrowerId.toString() !== this._id.toString());
+  book.borrowers = book.borrowers.filter(b => b.toString() !== this._id.toString());
   await book.save();
 };
 
@@ -121,36 +130,27 @@ UserSchema.methods.getOverdueBooks = function () {
 };
 
 ///////////////////////////////////////////////////////
-// ✅ VIRTUAL: Total Borrowed Books
+// ✅ VIRTUALS
 ///////////////////////////////////////////////////////
 UserSchema.virtual('totalBorrowed').get(function () {
   return this.books.length;
 });
-
-///////////////////////////////////////////////////////
-// ✅ VIRTUAL: Total Overdue Count
-///////////////////////////////////////////////////////
 UserSchema.virtual('overdueCount').get(function () {
   return this.getOverdueBooks().length;
 });
-
-///////////////////////////////////////////////////////
-// ✅ VIRTUAL: Total Saved Books
-///////////////////////////////////////////////////////
 UserSchema.virtual('totalSavedBooks').get(function () {
   return this.savedBooks.length;
 });
 
 ///////////////////////////////////////////////////////
-
 // ✅ METHOD: Populate All References
+///////////////////////////////////////////////////////
 UserSchema.methods.populateAll = function () {
   return this.populate([
     { path: 'books.book' },
     { path: 'savedBooks.book' }
   ]);
 };
-
 
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 export default User;
