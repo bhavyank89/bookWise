@@ -10,7 +10,7 @@ router.get('/books', FetchUser, async (req, res) => {
         const userId = req.user.id;
 
         // Find the user and populate the books they have borrowed
-        const userData = await User.findById(userId).populate('books');
+        const userData = await User.findById(userId).populate('books').sort({ createdAt: -1 });
 
         if (!userData) {
             return res.status(404).json({ success: false, message: "User not found" });

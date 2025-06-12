@@ -9,7 +9,7 @@ router.use(express.json());
 router.get('/', async (req, res) => {
     let success = false;
     try {
-        const users = await User.find();
+        const users = await User.find().sort({ createdAt: -1 });
         if (!users) {
             return res.status(404).json({ success, error: "No users found" });
         }

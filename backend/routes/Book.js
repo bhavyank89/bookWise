@@ -446,7 +446,7 @@ router.delete("/forceDelete/:id", fetchUser, async (req, res) => {
 // ------------------ FETCH BORROWERS ------------------
 router.get("/borrowers/:id", async (req, res) => {
   try {
-    const book = await Book.findById(req.params.id);
+    const book = await Book.findById(req.params.id).sort({ createdAt: -1 });
     if (!book) {
       return res.status(404).json({ success: false, error: "Book not found" });
     }
@@ -566,7 +566,7 @@ router.get('/all-borrow-requests', async (req, res) => {
   try {
     const books = await Book.find({
       borrowers: { $exists: true, $ne: [], $type: "array" }
-    });
+    }).sort({ createdAt: -1 });
 
     const allRequests = [];
 
@@ -580,12 +580,12 @@ router.get('/all-borrow-requests', async (req, res) => {
       for (const entry of borrowers) {
         const user = await User.findById(entry.user).lean(); // .lean() for performance
         if (!user) continue;
-        if (user) console.log("User found:", user);
 
         allRequests.push({
           bookId: book._id,
           title: book.title,
           author: book.author,
+          genre:book.genre,
           bookThumbnailCloudinary: book.thumbnailCloudinary,
           bookType: book.bookType,
           user: entry.user,

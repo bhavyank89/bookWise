@@ -10,7 +10,7 @@ router.get("/", fetchUser, async (req, res) => {
 
         // Find all books that the user has borrowed (returned or not)
         const books = await Book.find({ "borrowers.user": userId })
-            .select("title author genre borrowers") // only required fields
+            .select("title author genre borrowers").sort({ createdAt: -1 }) // only required fields
             .lean();
 
         // Filter borrower history for this user
