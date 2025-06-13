@@ -34,7 +34,6 @@ router.post(
         bookType,
       } = req.body;
 
-      // Validate required base fields
       if (!title || !author || !summary || !bookType) {
         return res.status(400).json({
           success: false,
@@ -43,7 +42,6 @@ router.post(
         });
       }
 
-      // Validate bookType enum
       if (!["physical", "ebook", "both"].includes(bookType)) {
         return res.status(400).json({
           success: false,
@@ -51,11 +49,9 @@ router.post(
         });
       }
 
-      // Parse count to number (physical copies count)
       let count = parseInt(countRaw, 10);
       if (isNaN(count)) count = 0;
 
-      // For physical or both, count must be >= 0 and required
       if ((bookType === "physical" || bookType === "both") && count < 0) {
         return res.status(400).json({
           success: false,
@@ -63,42 +59,25 @@ router.post(
         });
       }
 
-      // For ebook or both, PDF and thumbnail are required files
       const pdfFile = req.files?.uploadPDF?.[0];
       const thumbnailFile = req.files?.uploadThumbnail?.[0];
-      const videoFile = req.files?.uploadVideo?.[0]; // optional
+      const videoFile = req.files?.uploadVideo?.[0];
 
-      // For ebook or both, PDF and thumbnail are required files
-      // For physical, only thumbnail is required (PDF not needed)
-
-      if (bookType === "ebook" || bookType === "both") {
-        if (!pdfFile) {
-          return res.status(400).json({
-            success: false,
-            error: "PDF file is required for ebooks.",
-          });
-        }
-        if (!thumbnailFile) {
-          return res.status(400).json({
-            success: false,
-            error: "Thumbnail image is required for ebooks.",
-          });
-        }
-      }
-
-      // For physical, thumbnail is still required (even if PDF is not)
-      if (bookType === "physical" && !thumbnailFile) {
+      // Validate required files
+      if ((bookType === "ebook" || bookType === "both") && !pdfFile) {
         return res.status(400).json({
           success: false,
-          error: "Thumbnail image is required for physical books.",
+          error: "PDF file is required for ebooks.",
         });
       }
 
+      if (!thumbnailFile) {
+        return res.status(400).json({
+          success: false,
+          error: "Thumbnail image is required.",
+        });
+      }
 
-      // For physical-only books, no PDF or thumbnail is required
-      // So, skip error if missing in that case
-
-      // Upload files to Cloudinary (only those that exist)
       let pdfResult = null,
         thumbnailResult = null,
         videoResult = null;
@@ -106,15 +85,12 @@ router.post(
       try {
         const uploadPromises = [
           pdfFile ? uploadToCloudinary(pdfFile.path, "books/pdf") : Promise.resolve(null),
-          thumbnailFile
-            ? uploadToCloudinary(thumbnailFile.path, "books/thumbnails")
-            : Promise.resolve(null),
+          uploadToCloudinary(thumbnailFile.path, "books/thumbnails"),
           videoFile ? uploadToCloudinary(videoFile.path, "books/videos") : Promise.resolve(null),
         ];
 
         [pdfResult, thumbnailResult, videoResult] = await Promise.all(uploadPromises);
       } catch (uploadError) {
-        // Clean up local files if upload failed
         [pdfFile, thumbnailFile, videoFile].forEach((file) => {
           if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path);
         });
@@ -125,12 +101,12 @@ router.post(
         });
       }
 
-      // After upload success, delete local files
+      // Cleanup local files
       [pdfFile, thumbnailFile, videoFile].forEach((file) => {
         if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path);
       });
 
-      // Construct the new Book document
+      // Create book data
       const bookData = {
         title,
         author,
@@ -142,22 +118,19 @@ router.post(
         pdfCloudinary: pdfResult || null,
         thumbnailCloudinary: thumbnailResult || null,
         videoCloudinary: videoResult || null,
+        count: 0,
+        available: 0,
       };
 
-      // Set count and available only if physical or both
       if (bookType === "physical" || bookType === "both") {
         bookData.count = count;
         bookData.available = count;
-      } else {
-        // For ebooks only, count and available = 0
-        bookData.count = 0;
-        bookData.available = 0;
       }
 
-      // Save book to DB (schema pre-validate hook will run and validate)
       const newBook = new Book(bookData);
-      await newBook.validate(); // explicitly validate to catch any errors early
+      console.log("new Book : ", newBook);
 
+      await newBook.validate();
       await newBook.save();
 
       return res.status(201).json({
@@ -183,6 +156,7 @@ router.post(
     }
   }
 );
+
 
 
 // ------------------ SAVE EBOOK ONLY ------------------
@@ -585,7 +559,7 @@ router.get('/all-borrow-requests', async (req, res) => {
           bookId: book._id,
           title: book.title,
           author: book.author,
-          genre:book.genre,
+          genre: book.genre,
           bookThumbnailCloudinary: book.thumbnailCloudinary,
           bookType: book.bookType,
           user: entry.user,

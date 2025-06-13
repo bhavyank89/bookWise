@@ -149,18 +149,20 @@ BookSchema.pre('validate', function (next) {
   }
 
   // Validation for ebook - pdfCloudinary required if ebook or both
-  if (isEbook) {
+  // Thumbnail is required for all book types
+  if (!this.thumbnailCloudinary || Object.keys(this.thumbnailCloudinary).length === 0) {
+    this.invalidate('thumbnailCloudinary', 'Thumbnail image is required for all books');
+  }
+
+  // PDF is required if ebook or both
+  if (this.bookType === 'ebook' || this.bookType === 'both') {
     if (!this.pdfCloudinary || Object.keys(this.pdfCloudinary).length === 0) {
       this.invalidate('pdfCloudinary', 'PDF file is required for ebooks');
     }
-    if (!this.thumbnailCloudinary || Object.keys(this.thumbnailCloudinary).length === 0) {
-      this.invalidate('thumbnailCloudinary', 'Thumbnail image is required for ebooks');
-    }
-    // videoCloudinary is optional
-  } else {
+  }
+  else {
     // If no ebook, pdfCloudinary and thumbnailCloudinary can be null
     if (this.pdfCloudinary) this.pdfCloudinary = null;
-    if (this.thumbnailCloudinary) this.thumbnailCloudinary = null;
   }
 
   next();
