@@ -157,46 +157,103 @@ router.post(
   }
 );
 
-
-
-// ------------------ SAVE EBOOK ONLY ------------------
-router.post("/saveebook", fetchUser, async (req, res) => {
+// ------------------ FETCH ALL BOOKS ------------------
+router.get("/fetchall", async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { bookId } = req.body;
+    const books = await Book.find().sort({ createdAt: -1 });
+    res.json({ success: true, books });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: "An error occurred while fetching books"
+    });
+  }
+});
 
-    if (!bookId) {
-      return res.status(400).json({ success: false, error: "Book ID is required" });
-    }
-
-    const book = await Book.findById(bookId);
+// ------------------ FETCH SINGLE BOOK ------------------
+router.get("/fetch/:id", async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id);
     if (!book) {
       return res.status(404).json({ success: false, error: "Book not found" });
     }
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
-    }
-
-    // Check if already saved
-    const alreadySaved = user.savedBooks.some(saved => saved.book.toString() === bookId);
-    if (alreadySaved) {
-      return res.status(400).json({ success: false, error: "Book already saved" });
-    }
-
-    // Save the book
-    user.savedBooks.push({ book: bookId });
-    await user.save();
-
-    return res.status(200).json({ success: true, message: "Book saved successfully", savedBooks: user.savedBooks });
+    res.json({ success: true, book });
   } catch (error) {
-    console.error("Save ebook error:", error);
-    return res.status(500).json({ success: false, error: "Internal server error" });
+    res.status(500).json({
+      success: false,
+      error: "An error occurred while fetching the book"
+    });
   }
 });
 
-// ------------------ BORROW BOOK ------------------
+// ------------------ BORROW REQUEST --------------------
+router.put('/request/:id', fetchUser, async (req, res) => {
+  const user_Id = req.user.id;
+  const book_Id = req.params.id;
+
+  try {
+    const book = await Book.findById(book_Id);
+    if (!book) {
+      return res.status(404).json({ success: false, error: 'Book not found' });
+    }
+
+    const user = await User.findById(user_Id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // ✅ Check if already requested/borrowed (in book.borrowers)
+    const alreadyRequested = book.borrowers.find(
+      (entry) => entry.user.toString() === user_Id && !entry.returnedAt
+    );
+    if (alreadyRequested) {
+      return res.status(400).json({
+        success: false,
+        error: 'User has already requested or borrowed this book',
+      });
+    }
+
+    // ✅ Check availability for physical books
+    if (book.bookType === 'physical' || book.bookType === 'both') {
+      if (book.available <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'No copies available to borrow right now',
+        });
+      }
+    }
+
+    // ✅ Add to book.borrowers
+    const borrowEntry = {
+      user: user_Id,
+      borrowed: false,
+      requestedAt: Date.now(),
+    };
+    book.borrowers.push(borrowEntry);
+
+    // ✅ Add to user.borrowedBooks
+    const userBorrowEntry = {
+      book: book_Id,
+      borrowed: false,
+      requestedAt: Date.now(),
+    };
+    user.borrowedBooks.push(userBorrowEntry);
+
+    await book.save();
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Book request placed successfully',
+    });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
+// ------------------ BORROW ISSUE --------------------------
 router.post('/borrow/:id', async (req, res) => {
   const user_Id = req.body.user_Id;
   const book_Id = req.params.id;
@@ -204,75 +261,316 @@ router.post('/borrow/:id', async (req, res) => {
   try {
     const book = await Book.findById(book_Id);
     if (!book) {
-      return res.status(404).json({ success: false, error: "Book not found" });
+      return res.status(404).json({ success: false, error: 'Book not found' });
     }
 
-    // ✅ Check if user already borrowed this book
+    const user = await User.findById(user_Id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // ✅ Check if already borrowed and not returned
     const alreadyBorrowed = book.borrowers.find(
-      (entry) => entry.user.toString() === user_Id && entry.borrowed === true
+      (entry) => entry.user.toString() === user_Id && entry.borrowed === true && !entry.returnedAt
     );
     if (alreadyBorrowed) {
-      return res.status(400).json({ success: false, error: "User has already borrowed this book" });
+      return res.status(400).json({ success: false, error: 'User has already borrowed this book' });
     }
 
-    // ✅ Check availability
-    if (book.available <= 0) {
-      return res.status(400).json({ success: false, error: "Book not available right now" });
+    // ✅ Check physical availability
+    if ((book.bookType === 'physical' || book.bookType === 'both') && book.available <= 0) {
+      return res.status(400).json({ success: false, error: 'Book not available right now' });
     }
 
-    // ✅ Check for existing unconfirmed request
-    const existingRequest = book.borrowers.find(
+    const borrowedAt = new Date();
+    const dueDate = new Date(borrowedAt.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days
+
+    // ✅ Update book.borrowers
+    const existingBookEntry = book.borrowers.find(
       (entry) => entry.user.toString() === user_Id && entry.borrowed === false
     );
 
-    const borrowedAt = new Date();
-    const dueDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 days
-
-    if (existingRequest) {
-      existingRequest.borrowed = true;
-      existingRequest.borrowedAt = borrowedAt;
-      existingRequest.dueDate = dueDate;
+    if (existingBookEntry) {
+      existingBookEntry.borrowed = true;
+      existingBookEntry.borrowedAt = borrowedAt;
+      existingBookEntry.dueDate = dueDate;
     } else {
       book.borrowers.push({
         user: user_Id,
         borrowed: true,
         borrowedAt,
         dueDate,
+        requestedAt: borrowedAt,
       });
     }
 
-    // ✅ Update user's borrowed list
-    const user = await User.findById(user_Id);
+    // ✅ Update user's borrowedBooks
+    const userBorrowEntry = user.borrowedBooks.find(
+      (entry) => entry.book.toString() === book_Id
+    );
+
+    if (userBorrowEntry) {
+      userBorrowEntry.borrowed = true;
+      userBorrowEntry.borrowedAt = borrowedAt;
+      userBorrowEntry.dueDate = dueDate;
+      userBorrowEntry.returnedAt = null;
+      userBorrowEntry.lateFine = 0;
+    } else {
+      user.borrowedBooks.push({
+        book: book_Id,
+        borrowed: true,
+        borrowedAt,
+        dueDate,
+        requestedAt: borrowedAt,
+        returnedAt: null,
+        lateFine: 0,
+      });
+    }
+
+    // ✅ Update book availability
+    if (book.bookType === 'physical' || book.bookType === 'both') {
+      book.available -= 1;
+    }
+
+    await book.save();
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'Book Borrowed Successfully!' });
+  } catch (error) {
+    console.error('Borrow route error:', error);
+    res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
+// ------------------ FETCH BORROWERS ------------------
+router.get("/borrowers/:id", async (req, res) => {
+  try {
+    const book = await Book.findById(req.params.id);
+    if (!book) {
+      return res.status(404).json({ success: false, error: "Book not found" });
+    }
+
+    const enrichedBorrowers = [];
+
+    for (const entry of book.borrowers) {
+      // ✅ Skip returned books (shouldn't be here, but extra safety)
+      if (entry.returnedAt) continue;
+
+      const user = await User.findById(entry.user).lean();
+      if (!user) continue;
+
+      enrichedBorrowers.push({
+        userId: user._id,
+        userName: user.name,
+        userEmail: user.email,
+        userThumbnailCloudinary: user.avatar || null,
+        borrowed: entry.borrowed,
+        requestedAt: entry.requestedAt || null,
+        borrowedAt: entry.borrowedAt || null,
+        dueDate: entry.dueDate || null,
+        lateFine: entry.lateFine || 0,
+      });
+    }
+
+    return res.json({ success: true, borrowers: enrichedBorrowers });
+
+  } catch (error) {
+    console.error("Error fetching borrowers:", error);
+    res.status(500).json({
+      success: false,
+      error: "An error occurred while fetching borrowers"
+    });
+  }
+});
+
+// Fetch all borrow requests (requested and issued)
+router.get('/all-requests', async (req, res) => {
+  try {
+    const books = await Book.find({
+      borrowers: { $exists: true, $not: { $size: 0 } }
+    }).sort({ createdAt: -1 });
+
+    const allRequests = [];
+
+    for (const book of books) {
+      if (!Array.isArray(book.borrowers) || book.borrowers.length === 0) continue;
+
+      for (const entry of book.borrowers) {
+        // ✅ Skip returned books (shouldn't be in active borrowers, but double-check)
+        if (entry.returnedAt) continue;
+
+        const user = await User.findById(entry.user).lean();
+        if (!user) continue;
+
+        allRequests.push({
+          bookId: book._id,
+          title: book.title,
+          author: book.author,
+          genre: book.genre,
+          bookThumbnailCloudinary: book.thumbnailCloudinary || null,
+          bookType: book.bookType,
+
+          userId: user._id,
+          userName: user.name || "Unknown User",
+          userEmail: user.email || "Unknown Email",
+          userThumbnailCloudinary: user.avatar || null,
+
+          borrowed: entry.borrowed,
+          requestedAt: entry.requestedAt || null,
+          borrowedAt: entry.borrowedAt || null,
+          dueDate: entry.dueDate || null,
+          lateFine: entry.lateFine || 0,
+        });
+      }
+    }
+
+    return res.status(200).json({ success: true, requests: allRequests });
+  } catch (error) {
+    console.error("Error fetching all borrow requests:", error);
+    res.status(500).json({ success: false, error: "Internal server error" });
+  }
+});
+
+// ------------------ RETURN BOOK ------------------
+router.post("/return/:id", async (req, res) => {
+  try {
+    const userId = req.body.user_Id;
+    const bookId = req.params.id;
+
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ success: false, error: "Book not found" });
+    }
+
+    // ✅ Find borrow entry in book.borrowers
+    const borrowerIndex = book.borrowers.findIndex(
+      (b) => b.user.toString() === userId && b.borrowed === true && !b.returnedAt
+    );
+
+    if (borrowerIndex === -1) {
+      return res.status(400).json({ success: false, error: "You haven't borrowed this book" });
+    }
+
+    const borrowerEntry = book.borrowers[borrowerIndex];
+    const returnedAt = new Date();
+
+    // ✅ Calculate late fine
+    let lateFine = 0;
+    if (borrowerEntry.dueDate) {
+      const lateDays = Math.ceil((returnedAt - new Date(borrowerEntry.dueDate)) / (1000 * 60 * 60 * 24));
+      if (lateDays > 0) lateFine = lateDays * 10; // ₹10 per day
+    }
+
+    // ✅ Finalize borrowerEntry
+    borrowerEntry.returnedAt = returnedAt;
+    borrowerEntry.borrowed = false;
+    borrowerEntry.lateFine = lateFine;
+
+    // ✅ Add to borrowHistory before removing
+    book.borrowHistory.push({
+      user: borrowerEntry.user,
+      requestedAt: borrowerEntry.requestedAt,
+      borrowedAt: borrowerEntry.borrowedAt,
+      dueDate: borrowerEntry.dueDate,
+      returnedAt,
+      lateFine,
+    });
+
+    // ✅ Remove from current borrowers list
+    book.borrowers.splice(borrowerIndex, 1);
+
+    // ✅ Update physical book availability
+    if (book.bookType === 'physical' || book.bookType === 'both') {
+      book.available += 1;
+    }
+
+    await book.save();
+
+    // ✅ Update User schema
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    // Check if already in user's borrowed book list
-    const alreadyInUserList = user.books.find(
-      (b) => b.book.toString() === book_Id && b.returned === false
+    const userBorrowIndex = user.borrowedBooks.findIndex(
+      (b) => b.book.toString() === bookId && !b.returnedAt
     );
 
-    if (!alreadyInUserList) {
-      user.books.push({
-        book: book_Id,
-        borrowedAt,
-        dueDate,
+    if (userBorrowIndex !== -1) {
+      const userEntry = user.borrowedBooks[userBorrowIndex];
+
+      // ✅ Add to user.borrowHistory
+      user.borrowHistory.push({
+        book: bookId,
+        requestedAt: userEntry.requestedAt,
+        borrowedAt: userEntry.borrowedAt,
+        dueDate: userEntry.dueDate,
+        returnedAt,
+        lateFine,
       });
+
+      // ✅ Remove from current borrowed list
+      user.borrowedBooks.splice(userBorrowIndex, 1);
     }
 
-    // ✅ Update book availability and save
-    book.available -= 1;
-    await book.save();
     await user.save();
 
-    res.status(200).json({ success: true, message: "Book Borrowed Successfully!!" });
+    res.json({
+      success: true,
+      message: "Book returned successfully",
+      returnedAt,
+      lateFine,
+    });
 
   } catch (error) {
-    console.error("Borrow route error:", error);
+    console.error("Return book error:", error);
     res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 });
 
+// ------------------ BORROW HISTORY OF USER -------------------
+router.get("/borrowedHistory", async (req, res) => {
+  try {
+    const userId = req.body.user_Id;
+
+    // ✅ Fetch books where this user appears in borrowHistory
+    const books = await Book.find({ "borrowHistory.user": userId })
+      .select("title author genre borrowHistory thumbnailCloudinary")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const history = [];
+
+    for (const book of books) {
+      const userBorrows = book.borrowHistory.filter(
+        (entry) => entry.user.toString() === userId
+      );
+
+      for (const entry of userBorrows) {
+        history.push({
+          bookId: book._id,
+          title: book.title,
+          author: book.author,
+          genre: book.genre,
+          thumbnail: book.thumbnailCloudinary || null,
+
+          // Borrow details
+          requestedAt: entry.requestedAt || null,
+          borrowedAt: entry.borrowedAt || null,
+          dueDate: entry.dueDate || null,
+          returnedAt: entry.returnedAt || null,
+          lateFine: entry.lateFine || 0,
+          currentlyBorrowed: !entry.returnedAt, // still borrowed if not returned
+        });
+      }
+    }
+
+    return res.status(200).json({ success: true, history });
+  } catch (err) {
+    console.error("Error fetching borrow history:", err);
+    res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
 
 // ------------------ UPDATE BOOK ------------------
 // Added fetchUser middleware here for authentication protection
@@ -365,12 +663,22 @@ router.put(
 // ------------------ DELETE BOOK ------------------
 router.delete("/delete/:id", fetchUser, async (req, res) => {
   try {
-    const book = await Book.findByIdAndDelete(req.params.id);
+    const book = await Book.findById(req.params.id);
+
     if (!book) {
       return res.status(404).json({ success: false, error: "Book not found" });
     }
 
-    // Delete all files from Cloudinary
+    // ✅ Prevent deletion if the book is currently borrowed
+    const currentlyBorrowed = book.borrowers.some(b => b.borrowed === true);
+    if (currentlyBorrowed) {
+      return res.status(400).json({
+        success: false,
+        error: "Cannot delete book while it is borrowed by users",
+      });
+    }
+
+    // ✅ Delete Cloudinary assets (if exist)
     if (book.pdfCloudinary?.public_id) {
       await deleteFromCloudinary(book.pdfCloudinary.public_id);
     }
@@ -381,7 +689,11 @@ router.delete("/delete/:id", fetchUser, async (req, res) => {
       await deleteFromCloudinary(book.videoCloudinary.public_id);
     }
 
-    res.json({ success: true, message: "Book deleted" });
+    // ✅ Finally, delete the book from DB
+    await book.deleteOne();
+
+    return res.json({ success: true, message: "Book deleted successfully" });
+
   } catch (err) {
     console.error("Delete book error:", err);
     res.status(500).json({ success: false, error: "Internal server error" });
@@ -396,10 +708,7 @@ router.delete("/forceDelete/:id", fetchUser, async (req, res) => {
       return res.status(404).json({ success: false, error: "Book not found" });
     }
 
-    // Remove borrowers references or any other forced cleanup here if needed
-    await book.deleteOne();
-
-    // Delete cloudinary files
+    // ✅ Delete Cloudinary assets (if present)
     if (book.pdfCloudinary?.public_id) {
       await deleteFromCloudinary(book.pdfCloudinary.public_id);
     }
@@ -410,182 +719,21 @@ router.delete("/forceDelete/:id", fetchUser, async (req, res) => {
       await deleteFromCloudinary(book.videoCloudinary.public_id);
     }
 
+    // ✅ Optionally: remove references from users who have this book in their borrowed list
+    // Only if needed:
+    // await User.updateMany(
+    //   { "books.book": book._id },
+    //   { $pull: { books: { book: book._id } } }
+    // );
+
+    // ✅ Delete the book record
+    await book.deleteOne();
+
     res.json({ success: true, message: "Book forcibly deleted" });
   } catch (err) {
     console.error("Force delete book error:", err);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
-
-// ------------------ FETCH BORROWERS ------------------
-router.get("/borrowers/:id", async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id).sort({ createdAt: -1 });
-    if (!book) {
-      return res.status(404).json({ success: false, error: "Book not found" });
-    }
-
-    res.json({ success: true, borrowers: book.borrowers });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: "An error occurred while fetching borrowers"
-    });
-  }
-});
-
-// ------------------ FETCH ALL BOOKS ------------------
-router.get("/fetchall", async (req, res) => {
-  try {
-    const books = await Book.find().sort({ createdAt: -1 });
-    res.json({ success: true, books });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: "An error occurred while fetching books"
-    });
-  }
-});
-
-// ------------------ FETCH SINGLE BOOK ------------------
-router.get("/fetch/:id", async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id);
-    if (!book) {
-      return res.status(404).json({ success: false, error: "Book not found" });
-    }
-
-    res.json({ success: true, book });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: "An error occurred while fetching the book"
-    });
-  }
-});
-
-// ------------------ RETURN BOOK ------------------
-router.post("/return/:id", fetchUser, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const bookId = req.params.id;
-
-    const book = await Book.findById(bookId);
-    if (!book) {
-      return res.status(404).json({ success: false, error: "Book not found" });
-    }
-
-    // ✅ Find the borrow entry for this user in the book
-    const borrowerEntry = book.borrowers.find(
-      (b) => b.user.toString() === userId && b.borrowed === true
-    );
-
-    if (!borrowerEntry) {
-      return res.status(400).json({ success: false, error: "You haven't borrowed this book" });
-    }
-
-    const returnedAt = new Date();
-    borrowerEntry.returnedAt = returnedAt;
-    borrowerEntry.borrowed = false;
-
-    // ✅ Compute late fine
-    let lateFine = 0;
-    if (borrowerEntry.dueDate) {
-      const dueDate = new Date(borrowerEntry.dueDate);
-      const lateDays = Math.ceil((returnedAt - dueDate) / (1000 * 60 * 60 * 24));
-      if (lateDays > 0) {
-        lateFine = lateDays * 10; // ₹10 per late day
-      }
-    }
-    borrowerEntry.lateFine = lateFine;
-
-    // ✅ Update availability count
-    book.available += 1;
-    await book.save();
-
-    // ✅ Update user.books list as well
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ success: false, error: "User not found" });
-    }
-
-    const userBorrowEntry = user.books.find(
-      (b) => b.book.toString() === bookId && b.returned === false
-    );
-
-    if (userBorrowEntry) {
-      userBorrowEntry.returned = true;
-      userBorrowEntry.returnedAt = returnedAt;
-      userBorrowEntry.lateFine = lateFine;
-    }
-
-    await user.save();
-
-    return res.json({
-      success: true,
-      message: "Book returned successfully",
-      returnedAt,
-      lateFine,
-    });
-
-  } catch (error) {
-    console.error("Return book error:", error);
-    res.status(500).json({ success: false, error: "Internal server error" });
-  }
-});
-
-
-// Fetch all borrow requests (pending + fulfilled)
-router.get('/all-borrow-requests', async (req, res) => {
-  try {
-    const books = await Book.find({
-      borrowers: { $exists: true, $ne: [], $type: "array" }
-    }).sort({ createdAt: -1 });
-
-    const allRequests = [];
-
-    for (const book of books) {
-      const borrowers = book?.borrowers;
-
-      if (!Array.isArray(borrowers) || borrowers.length === 0) {
-        continue;
-      }
-
-      for (const entry of borrowers) {
-        const user = await User.findById(entry.user).lean(); // .lean() for performance
-        if (!user) continue;
-
-        allRequests.push({
-          bookId: book._id,
-          title: book.title,
-          author: book.author,
-          genre: book.genre,
-          bookThumbnailCloudinary: book.thumbnailCloudinary,
-          bookType: book.bookType,
-          user: entry.user,
-          userThumbnailCloudinary: user.avatar || null,
-          userName: user.name || "Unknown User",
-          userEmail: user.email || "Unknown Email",
-          borrowed: entry.borrowed,
-          requestedAt: entry.requestedAt || entry.createdAt || null,
-          borrowedAt: entry.borrowedAt || null,
-          dueDate: entry.dueDate || null,
-          returnedAt: entry.returnedAt || null,
-          lateFine: entry.lateFine || 0,
-        });
-      }
-    }
-
-    return res.status(200).json({ success: true, requests: allRequests });
-  } catch (error) {
-    console.error("Error fetching all borrow requests:", error?.message || error);
-    res.status(500).json({ success: false, error: "Internal server error" });
-  }
-});
-
-
-
-
-
 
 export default router;

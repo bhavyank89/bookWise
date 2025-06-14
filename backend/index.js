@@ -5,13 +5,8 @@ import connectToMongoose from './db/db.js';
 // Route Imports
 import homeRoutes from './routes/Home.js';
 import authRoutes from './routes/Auth.js';
-import getUserRoute from './routes/GetUser.js';
 import bookRoutes from './routes/Book.js';
-import borrowBookRoutes from './routes/BorrowBook.js';
-import verifyUserRoutes from './routes/VerifyUser.js';
-import getBooksRoute from './routes/GetBooks.js';
-import fetchUsersRoute from './routes/FetchUsers.js';
-import getBorrowHistory from './routes/BorrowHistory.js';
+import userRoutes from './routes/User.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -41,13 +36,8 @@ app.use(express.json());
 // Routes
 app.use('/', homeRoutes);
 app.use('/auth', authRoutes);
-app.use('/fetchuser', getUserRoute);
 app.use('/book', bookRoutes);
-app.use('/borrowbook', borrowBookRoutes);
-app.use('/verifyuser', verifyUserRoutes);
-app.use('/user', getBooksRoute);
-app.use('/fetchall', fetchUsersRoute);
-app.use('/user/borrowHistory', getBorrowHistory);
+app.use('/user', userRoutes);
 
 // Optional: Handle unknown routes
 app.use((req, res) => {
