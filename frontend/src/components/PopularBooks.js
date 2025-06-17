@@ -4,34 +4,33 @@ import { motion } from "framer-motion";
 const PopularBooks = ({ loading, books, handleBookClick }) => {
     const scrollRef = useRef(null);
     const [isHovering, setIsHovering] = useState(false);
+    const [noBooks, setNoBooks] = useState(false);
+
+    useEffect(() => {
+        setNoBooks(!loading && (!books || books.length === 0));
+    }, [loading, books]);
 
     useEffect(() => {
         const scrollContainer = scrollRef.current;
         if (!scrollContainer) return;
 
-        const handleScroll = () => {
-            if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth) {
-                setTimeout(() => {
-                    scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
-                }, 2000);
-            }
-        };
-
-        scrollContainer.addEventListener("scroll", handleScroll);
-
-        const autoScroll = setInterval(() => {
-            if (!isHovering && scrollContainer) {
+        const autoScroll = () => {
+            if (scrollContainer && !isHovering) {
                 scrollContainer.scrollLeft += 1;
+                if (
+                    scrollContainer.scrollLeft + scrollContainer.clientWidth >=
+                    scrollContainer.scrollWidth
+                ) {
+                    scrollContainer.scrollTo({ left: 0, behavior: "smooth" });
+                }
             }
-        }, 15);
-
-        return () => {
-            scrollContainer.removeEventListener("scroll", handleScroll);
-            clearInterval(autoScroll);
+            requestAnimationFrame(autoScroll);
         };
-    }, [isHovering]);
 
-    const noBooks = !loading && (!books || books.length === 0);
+        const scrollFrame = requestAnimationFrame(autoScroll);
+
+        return () => cancelAnimationFrame(scrollFrame);
+    }, [isHovering]);
 
     return (
         <section className="mb-8">
@@ -39,7 +38,11 @@ const PopularBooks = ({ loading, books, handleBookClick }) => {
 
             {noBooks ? (
                 <div className="flex flex-col items-center justify-center py-20">
-                    <img src="/no-books.png" alt="No books found" className="w-32 h-32 opacity-50 mb-4" />
+                    <img
+                        src="/no-books.png"
+                        alt="No books found"
+                        className="w-32 h-32 opacity-50 mb-4"
+                    />
                     <p className="text-gray-400 text-lg">No popular books found</p>
                 </div>
             ) : (
@@ -51,23 +54,26 @@ const PopularBooks = ({ loading, books, handleBookClick }) => {
                 >
                     {loading
                         ? Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="flex-shrink-0 w-[160px] h-[240px] animate-pulse bg-gray-700 rounded-md shadow-md"></div>
+                            <div
+                                key={i}
+                                className="flex-shrink-0 w-[160px] h-[240px] bg-gray-700 animate-pulse rounded-lg shadow-inner"
+                            ></div>
                         ))
                         : books.map((book, index) => (
                             <motion.div
                                 whileHover={{ scale: 1.05, y: -5 }}
                                 transition={{ type: "spring", stiffness: 300 }}
                                 key={book._id || index}
-                                className="flex-shrink-0 w-[160px] h-[240px] bg-[#1a1a1a] rounded-lg shadow-md hover:shadow-lg relative cursor-pointer overflow-hidden p-3"
+                                className="flex-shrink-0 w-[160px] h-[240px] bg-[#1a1a1a] rounded-lg shadow-md relative cursor-pointer overflow-hidden"
                                 onClick={() => handleBookClick(book._id)}
                             >
                                 <img
                                     src={book.thumbnailCloudinary?.secure_url || "/fury.png"}
-                                    alt={`Cover of ${book.title || "book"}`}
+                                    alt={book.title ? `Cover of ${book.title}` : "Book cover"}
                                     loading="lazy"
                                     className="w-full h-full object-cover rounded-sm"
                                 />
-                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 p-2">
+                                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 px-2 py-1">
                                     <p className="font-semibold text-xs text-white truncate text-center">
                                         {book.title || "Untitled"}
                                     </p>

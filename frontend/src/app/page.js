@@ -67,9 +67,9 @@ function MainApp() {
           <Route path="/" element={<MotionWrapper><Landing setActiveUser={setActiveUser} setIsLogin={setIsLogin} /></MotionWrapper>} />
           <Route path="/login" element={<MotionWrapper><Login setIsLogin={setIsLogin} setActiveUser={setActiveUser} /></MotionWrapper>} />
           <Route path="/signup" element={<MotionWrapper><Signup /></MotionWrapper>} />
-          <Route path="/dashboard" element={<MotionWrapper><MarginTop><Dashboard /></MarginTop></MotionWrapper>} />
-          <Route path="/bookdetails/:id" element={<MotionWrapper><MarginTop><BookDetails /></MarginTop></MotionWrapper>} />
-          <Route path="/search" element={<MotionWrapper><MarginTop><SearchPage /></MarginTop></MotionWrapper>} />
+          <Route path="/dashboard" element={<MotionWrapper><MarginTop><Dashboard activeUser={activeUser} isLogin={isLogin} /></MarginTop></MotionWrapper>} />
+          <Route path="/bookdetails/:id" element={<MotionWrapper><MarginTop><BookDetails activeUser={activeUser} isLogin={isLogin} /></MarginTop></MotionWrapper>} />
+          <Route path="/search" element={<MotionWrapper><MarginTop><SearchPage activeUser={activeUser} isLogin={isLogin} /></MarginTop></MotionWrapper>} />
           <Route path="/profile" element={<MotionWrapper><MarginTop><Profile activeUser={activeUser} setActiveUser={setActiveUser} /></MarginTop></MotionWrapper>} />
           <Route path="/uploadPDF" element={<MotionWrapper><UploadPDF /></MotionWrapper>} />
         </Routes>
