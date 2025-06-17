@@ -312,4 +312,56 @@ router.get("/savedbooks", FetchUser, async (req, res) => {
     }
 });
 
+// ------------------ DELETE USER ----------------------
+router.delete('/delete/:id', async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Step 1: Find the user
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Step 2: Loop over borrowed books (active), update book availability and borrowers list
+    for (const borrow of user.borrowedBooks) {
+      const book = await Book.findById(borrow.book);
+      if (book) {
+        // Increase available count
+        book.available += 1;
+
+        // Remove user from active borrowers
+        book.borrowers = book.borrowers.filter(b => b.user.toString() !== userId);
+        await book.save();
+      }
+    }
+
+    // Step 3: Clean savedBy list from all books
+    await Book.updateMany(
+      { savedBy: user._id },
+      { $pull: { savedBy: user._id } }
+    );
+
+    // Step 4: Clean borrowHistory and borrowers in books
+    const allBooks = await Book.find({
+      $or: [
+        { 'borrowHistory.user': user._id },
+        { 'borrowers.user': user._id },
+      ]
+    });
+
+    for (const book of allBooks) {
+      book.borrowers = book.borrowers.filter(b => b.user.toString() !== userId);
+      book.borrowHistory = book.borrowHistory.filter(h => h.user.toString() !== userId);
+      await book.save();
+    }
+
+    // Step 5: Finally, delete the user
+    await user.deleteOne();
+
+    res.status(200).json({ success: true, message: 'User deleted and data cleaned up successfully' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ success: false, message: 'Server error while deleting user' });
+  }
+});
+
 export default router;

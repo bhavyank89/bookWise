@@ -90,14 +90,39 @@ router.post('/login', [
         const payload = { user: { id: user._id } };
         const token = jwt.sign(payload, JWT_SECRET);
 
+        const cookieName = role === "Admin" ? "adminToken" : "token";
+
+        res.cookie(cookieName, token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production", // true on Vercel
+            sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
         success = true;
         res.json({ success, token });
-
     } catch (error) {
         console.error(error.message);
         res.status(500).json({ success, error: "Internal Server Error" });
     }
 });
+
+// ------------------ LOGOUT ------------------
+router.post('/logout', (req, res) => {
+    res.clearCookie('token', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax"
+    });
+    res.clearCookie('adminToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "None" : "Lax"
+    });
+
+    res.json({ success: true, message: "Logged out" });
+});
+
 
 // -------------- edit User -------------------------------
 router.post('/updateuser', fetchUser, uploadAndCloudinary, uploadAndProcessFiles, async (req, res) => {

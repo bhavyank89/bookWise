@@ -15,8 +15,7 @@ import User from "../models/User.js";
 const router = express.Router();
 
 // ------------------ CREATE BOOK ------------------
-router.post(
-  "/createbook",
+router.post("/createbook",
   upload.fields([
     { name: "uploadPDF", maxCount: 1 },
     { name: "uploadThumbnail", maxCount: 1 },
@@ -411,6 +410,7 @@ router.get('/all-requests', async (req, res) => {
           bookType: book.bookType,
 
           userId: user._id,
+          uniId: user.uniId,
           userName: user.name || "Unknown User",
           userEmail: user.email || "Unknown Email",
           userThumbnailCloudinary: user.avatar || null,
@@ -529,11 +529,21 @@ router.post("/return/:id", async (req, res) => {
 });
 
 // ------------------ BORROW HISTORY OF USER -------------------
-router.get("/borrowedHistory", async (req, res) => {
+router.post("/borrowedHistory", async (req, res) => {
   try {
     const userId = req.body.user_Id;
 
-    // ✅ Fetch books where this user appears in borrowHistory
+    if (!userId) {
+      return res.status(400).json({ success: false, error: "User ID is required" });
+    }
+
+    // ✅ Fetch user avatar and basic info
+    const user = await User.findById(userId).select("name email avatar");
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    // ✅ Fetch books where this user has any borrow history
     const books = await Book.find({ "borrowHistory.user": userId })
       .select("title author genre borrowHistory thumbnailCloudinary")
       .sort({ createdAt: -1 })
@@ -548,19 +558,26 @@ router.get("/borrowedHistory", async (req, res) => {
 
       for (const entry of userBorrows) {
         history.push({
+          // 🔹 Book info
           bookId: book._id,
           title: book.title,
           author: book.author,
           genre: book.genre,
-          thumbnail: book.thumbnailCloudinary || null,
+          bookThumbnail: book.thumbnailCloudinary || null,
 
-          // Borrow details
+          // 🔹 User info
+          userId: user._id,
+          userName: user.name,
+          userEmail: user.email,
+          userAvatar: user.avatar || null,
+
+          // 🔹 Borrow details
           requestedAt: entry.requestedAt || null,
           borrowedAt: entry.borrowedAt || null,
           dueDate: entry.dueDate || null,
           returnedAt: entry.returnedAt || null,
           lateFine: entry.lateFine || 0,
-          currentlyBorrowed: !entry.returnedAt, // still borrowed if not returned
+          currentlyBorrowed: !entry.returnedAt, // true if not yet returned
         });
       }
     }
@@ -572,16 +589,55 @@ router.get("/borrowedHistory", async (req, res) => {
   }
 });
 
+// ------------------ COMBINED BORROW HISTORY ------------------
+router.get('/all-borrow-history', async (req, res) => {
+  try {
+    const users = await User.find({})
+      .populate({
+        path: 'borrowHistory.book',
+        select: 'title author bookType thumbnailCloudinary' // only necessary fields
+      })
+      .select('name email avatar uniId borrowHistory'); // include avatar & uniId
+
+    const combinedHistory = users.flatMap(user =>
+      user.borrowHistory.map(history => ({
+        userId: user._id,
+        userName: user.name,
+        userEmail: user.email,
+        userUniId: user.uniId || null,
+        userAvatar: user.avatar || null,
+
+        bookId: history.book?._id || null,
+        bookTitle: history.book?.title || 'Deleted Book',
+        bookAuthor: history.book?.author || 'Unknown',
+        bookType: history.book?.bookType || 'N/A',
+        bookThumbnailCloudinary: history.book?.thumbnailCloudinary || null,
+
+        requestedAt: history.requestedAt,
+        borrowedAt: history.borrowedAt,
+        dueDate: history.dueDate,
+        returnedAt: history.returnedAt,
+        lateFine: history.lateFine,
+      }))
+    );
+
+    // Sort by returnedAt descending
+    combinedHistory.sort((a, b) => new Date(b.returnedAt) - new Date(a.returnedAt));
+
+    res.status(200).json({ success: true, data: combinedHistory });
+  } catch (error) {
+    console.error('Error fetching combined borrow history:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // ------------------ UPDATE BOOK ------------------
 // Added fetchUser middleware here for authentication protection
-router.put(
-  "/update/:id",
-  fetchUser,
-  upload.fields([
-    { name: "uploadPDF", maxCount: 1 },
-    { name: "uploadThumbnail", maxCount: 1 },
-    { name: "uploadVideo", maxCount: 1 },
-  ]),
+router.put("/update/:id", upload.fields([
+  { name: "uploadPDF", maxCount: 1 },
+  { name: "uploadThumbnail", maxCount: 1 },
+  { name: "uploadVideo", maxCount: 1 },
+]),
   handleMulterError,
   async (req, res) => {
     try {

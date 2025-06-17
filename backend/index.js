@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import connectToMongoose from './db/db.js';
+import cookieParser from 'cookie-parser';
 
 // Route Imports
 import homeRoutes from './routes/Home.js';
@@ -32,6 +33,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/', homeRoutes);
