@@ -65,7 +65,7 @@ function MainApp() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<MotionWrapper><App /></MotionWrapper>} />
           <Route path="/landing" element={<MotionWrapper><Landing setActiveUser={setActiveUser} setIsLogin={setIsLogin} /></MotionWrapper>} />
-          <Route path="/login" element={<MotionWrapper><Login setIsLogin={setIsLogin} /></MotionWrapper>} />
+          <Route path="/login" element={<MotionWrapper><Login setIsLogin={setIsLogin} setActiveUser={setActiveUser}/></MotionWrapper>} />
           <Route path="/signup" element={<MotionWrapper><Signup /></MotionWrapper>} />
           <Route path="/dashboard" element={<MotionWrapper><MarginTop><Dashboard /></MarginTop></MotionWrapper>} />
           <Route path="/bookdetails/:id" element={<MotionWrapper><MarginTop><BookDetails /></MarginTop></MotionWrapper>} />

@@ -23,7 +23,7 @@ const formSchema = z.object({
     password: z.string().min(8, { message: "Minimum 8 characters required" }),
 });
 
-function Login({ setIsLogin = () => { } }) {
+function Login({ setIsLogin = () => { }, setActiveUser }) {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -70,6 +70,27 @@ function Login({ setIsLogin = () => { } }) {
         navigate("/signup");
     };
 
+    const fetchUser = async () => {
+        try {
+            const res = await fetch("http://localhost:4000/user", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "auth-token": localStorage.getItem("userToken"),
+                },
+            });
+            const json = await res.json();
+            setActiveUser(json);
+            setIsLogin(true);
+            return true;
+        } catch (err) {
+            console.error("Error fetching user:", err);
+            setActiveUser({});
+            setIsLogin(false);
+            return false;
+        }
+    };
+
     const onSubmit = async (data) => {
         setIsLoading(true);
 
@@ -89,8 +110,12 @@ function Login({ setIsLogin = () => { } }) {
             const json = await response.json();
             if (response.ok && json.success) {
                 localStorage.setItem("userToken", json.token);
-                setIsLogin(true);
-                navigate('/dashboard');
+                const user = await fetchUser();
+                if (user) navigate('/dashboard');
+                else {
+                    console.log("error finding user");
+                    localStorage.removeItem('userToken')
+                };
             } else {
                 toast.error(json.error || "Login failed!");
             }
