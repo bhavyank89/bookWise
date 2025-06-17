@@ -58,7 +58,6 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
         const role = selectedRole.toLowerCase();
         const tokenKey = role === "user" ? "userToken" : "adminToken";
         const token = localStorage.getItem(tokenKey);
-        console.log(tokenKey);
         if (!token) {
             console.warn("No token found for role:", role);
             role === "user" ? navigate("/login") : navigate("/adminLogin");
@@ -66,9 +65,6 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
         }
 
         const { success, user } = await fetchUser(role);
-
-        console.log("success : ", success);
-        console.log("user : ", user);
 
         if (success && user) {
             if (role === "user") {

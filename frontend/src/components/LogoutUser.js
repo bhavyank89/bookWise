@@ -3,13 +3,14 @@
 import React from 'react';
 import { LogOut } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
+import { toast } from "react-hot-toast";
 
 function LogoutUser({ setIsLogin }) {
     const navigate = useNavigate();
 
     const handleOnClick = () => {
-        console.log("logout clicked");
         localStorage.removeItem('userToken');
+        toast.success("successfully Logged out")
         setIsLogin(false);
         navigate('/');
     };

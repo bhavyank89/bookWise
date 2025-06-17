@@ -85,6 +85,7 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
             return true;
         } catch (err) {
             console.error("Error fetching user:", err);
+            toast.error(err.message || "server error");
             setActiveUser({});
             setIsLogin(false);
             return false;
@@ -111,9 +112,11 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
             if (response.ok && json.success) {
                 localStorage.setItem("userToken", json.token);
                 const user = await fetchUser();
-                if (user) navigate('/dashboard');
+                if (user) {
+                    toast.success("Login Successful");
+                    navigate('/dashboard');
+                }
                 else {
-                    console.log("error finding user");
                     localStorage.removeItem('userToken')
                 };
             } else {

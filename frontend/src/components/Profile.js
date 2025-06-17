@@ -1,10 +1,11 @@
 "use client";
 
 import { CalendarDays, Undo2, Clock, BadgeCheck, Pencil } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
-const BorrowedBooksPage = ({activeUser,setActiveUser}) => {
+const BorrowedBooksPage = ({ activeUser, setActiveUser }) => {
     const [borrowedBooks, setBorrowedBooks] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,29 +17,6 @@ const BorrowedBooksPage = ({activeUser,setActiveUser}) => {
         avatarFile: null,
         uniIdFile: null
     });
-
-    // useEffect(() => {
-    //     const fetchUser = async () => {
-    //         try {
-    //             const res = await fetch("http://localhost:4000/user/", {
-    //                 method: "GET",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                     "auth-token": localStorage.getItem("userToken"),
-    //                 },
-    //             });
-    //             const json = await res.json();
-    //             setActiveUser(json);
-    //             setBorrowedBooks(json.books || []);
-    //             setLoading(false);
-    //         } catch (err) {
-    //             console.error("Error fetching user:", err);
-    //             setLoading(false);
-    //         }
-    //     };
-
-    //     fetchUser();
-    // }, []);
 
     const handleOpenModal = () => {
         setUserData({
@@ -85,12 +63,15 @@ const BorrowedBooksPage = ({activeUser,setActiveUser}) => {
 
             if (json.success) {
                 setActiveUser(json.updatedUser);
+                toast.success("Data updated");
                 setIsModalOpen(false);
             } else {
                 console.error("Error updating user", json.message);
+                toast.error(json.message || "Error updating data");
             }
         } catch (err) {
             console.error("Error submitting form", err);
+            toast.error(err.message || "Error updating data");
         }
     };
 
@@ -206,7 +187,7 @@ const BorrowedBooksPage = ({activeUser,setActiveUser}) => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 100 }}
                             transition={{ duration: 0.5, ease: 'easeInOut', delay: 0.2 }}
-                            className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 max-w-md w-full shadow-2xl my-8 max-h-[90vh] no-scrollbar overflow-y-auto"
+                            className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 max-w-md w-full shadow-2xl my-8 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-black scrollbar-track-transparent"
                         >
                             <h2 className="text-2xl font-bold text-white mb-6">Edit Profile</h2>
 

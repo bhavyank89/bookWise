@@ -48,7 +48,6 @@ const BookDetails = () => {
     }, [id]);
 
     const handleBookClick = (book_id, b) => {
-        console.log(b);
         navigate(`/bookDetails/${book_id}`, { state: { fromDashboard: true } });
     };
 
