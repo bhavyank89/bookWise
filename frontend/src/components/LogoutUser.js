@@ -9,7 +9,7 @@ function LogoutUser({ setIsLogin }) {
 
     const handleOnClick = () => {
         console.log("logout clicked");
-        localStorage.removeItem('auth-token');
+        localStorage.removeItem('userToken');
         setIsLogin(false);
         navigate('/landing');
     };

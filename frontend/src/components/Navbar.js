@@ -9,25 +9,25 @@ function Navbar({ setIsLogin, activeUser, setActiveUser }) {
     const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res = await fetch("http://localhost:4000/user", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "auth-token": localStorage.getItem("auth-token"),
-                    },
-                });
-                const json = await res.json();
-                setActiveUser(json);
-            } catch (err) {
-                console.error("Error fetching user:", err);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchUser = async () => {
+    //         try {
+    //             const res = await fetch("http://localhost:4000/user", {
+    //                 method: "GET",
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                     "auth-token": localStorage.getItem("userToken"),
+    //                 },
+    //             });
+    //             const json = await res.json();
+    //             setActiveUser(json);
+    //         } catch (err) {
+    //             console.error("Error fetching user:", err);
+    //         }
+    //     };
 
-        fetchUser();
-    }, []); // Run only once on mount
+    //     fetchUser();
+    // }, []); // Run only once on mount
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 

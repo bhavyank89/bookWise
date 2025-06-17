@@ -13,7 +13,7 @@ const fadeVariant = {
     exit: { opacity: 0, transition: { duration: 1 } }
 };
 
-const CombinedLandingPage = () => {
+const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState('');
@@ -26,17 +26,58 @@ const CombinedLandingPage = () => {
         setSelectedRole('');
     };
 
-    const handleContinue = () => {
-        if (selectedRole) {
-            if (selectedRole == "user") {
-                console.log("continue as user");
-                navigate('/login');
+    const fetchUser = async () => {
+        try {
+            const res = await fetch("http://localhost:4000/user", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "auth-token": localStorage.getItem("userToken"),
+                },
+            });
+            const json = await res.json();
+            setActiveUser(json);
+            setIsLogin(true);
+            return true;
+        } catch (err) {
+            console.error("Error fetching user:", err);
+            setActiveUser({});
+            setIsLogin(false);
+            return false;
+        }
+    };
 
+    const handleContinue = async () => {
+        if (!selectedRole) return;
+
+        closeModal();
+
+        if (selectedRole === "user") {
+            console.log("continue as user");
+            const token = localStorage.getItem('userToken');
+            let valid = false;
+            if (token) {
+                valid = await fetchUser();
             }
-            if (selectedRole == "admin") {
-                console.log("continue as admin");
+            if (valid) {
+                navigate("/dashboard");
+            } else {
+                navigate("/login");
             }
-            closeModal();
+        }
+
+        if (selectedRole === "admin") {
+            console.log("continue as admin");
+            const token = localStorage.getItem('adminToken');
+            let valid = false;
+            if (token) {
+                valid = await fetchUser();
+            }
+            if (valid) {
+                navigate("/");
+            } else {
+                navigate("/login");
+            }
         }
     };
 

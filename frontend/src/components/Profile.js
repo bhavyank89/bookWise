@@ -4,10 +4,9 @@ import { CalendarDays, Undo2, Clock, BadgeCheck, Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const BorrowedBooksPage = () => {
-    const [activeUser, setActiveUser] = useState({});
+const BorrowedBooksPage = ({activeUser,setActiveUser}) => {
     const [borrowedBooks, setBorrowedBooks] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userData, setUserData] = useState({
         avatar: '',
@@ -18,28 +17,28 @@ const BorrowedBooksPage = () => {
         uniIdFile: null
     });
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const res = await fetch("http://localhost:4000/user/", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "auth-token": localStorage.getItem("auth-token"),
-                    },
-                });
-                const json = await res.json();
-                setActiveUser(json);
-                setBorrowedBooks(json.books || []);
-                setLoading(false);
-            } catch (err) {
-                console.error("Error fetching user:", err);
-                setLoading(false);
-            }
-        };
+    // useEffect(() => {
+    //     const fetchUser = async () => {
+    //         try {
+    //             const res = await fetch("http://localhost:4000/user/", {
+    //                 method: "GET",
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                     "auth-token": localStorage.getItem("userToken"),
+    //                 },
+    //             });
+    //             const json = await res.json();
+    //             setActiveUser(json);
+    //             setBorrowedBooks(json.books || []);
+    //             setLoading(false);
+    //         } catch (err) {
+    //             console.error("Error fetching user:", err);
+    //             setLoading(false);
+    //         }
+    //     };
 
-        fetchUser();
-    }, []);
+    //     fetchUser();
+    // }, []);
 
     const handleOpenModal = () => {
         setUserData({
@@ -78,7 +77,7 @@ const BorrowedBooksPage = () => {
         try {
             const res = await fetch("http://localhost:4000/auth/updateuser", {
                 method: "POST",
-                headers: { "auth-token": localStorage.getItem("auth-token") },
+                headers: { "auth-token": localStorage.getItem("userToken") },
                 body: formData
             });
 

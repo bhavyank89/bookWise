@@ -106,7 +106,6 @@ function Signup() {
 
             if (json.success) {
                 toast.success("Signup successful!");
-                localStorage.setItem("auth-token", json.token);
                 navigate("/login");
             } else if (json.error?.includes("User already exists")) {
                 toast.error("User already exists");

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -28,7 +28,6 @@ const fadeVariants = {
   exit: { opacity: 0, y: -20, transition: { duration: 0.3, ease: "easeIn" } },
 };
 
-// JS-compatible motion wrapper
 function MotionWrapper({ children }) {
   return (
     <motion.div
@@ -44,13 +43,8 @@ function MotionWrapper({ children }) {
 }
 
 function MarginTop({ children }) {
-  return (
-    <div className="pt-20 lg:pt-40">
-      {children}
-    </div>
-  );
+  return <div className="pt-20 lg:pt-40">{children}</div>;
 }
-
 
 function MainApp() {
   const [isLogin, setIsLogin] = useState(false);
@@ -66,16 +60,17 @@ function MainApp() {
           activeUser={activeUser}
         />
       )}
+
       <AnimatePresence mode="wait" initial={false}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<MotionWrapper><App /></MotionWrapper>} />
-          <Route path="/landing" element={<MotionWrapper><Landing /></MotionWrapper>} />
+          <Route path="/landing" element={<MotionWrapper><Landing setActiveUser={setActiveUser} setIsLogin={setIsLogin} /></MotionWrapper>} />
           <Route path="/login" element={<MotionWrapper><Login setIsLogin={setIsLogin} /></MotionWrapper>} />
           <Route path="/signup" element={<MotionWrapper><Signup /></MotionWrapper>} />
           <Route path="/dashboard" element={<MotionWrapper><MarginTop><Dashboard /></MarginTop></MotionWrapper>} />
           <Route path="/bookdetails/:id" element={<MotionWrapper><MarginTop><BookDetails /></MarginTop></MotionWrapper>} />
           <Route path="/search" element={<MotionWrapper><MarginTop><SearchPage /></MarginTop></MotionWrapper>} />
-          <Route path="/profile" element={<MotionWrapper><MarginTop><Profile /></MarginTop></MotionWrapper>} />
+          <Route path="/profile" element={<MotionWrapper><MarginTop><Profile activeUser={activeUser} setActiveUser={setActiveUser} /></MarginTop></MotionWrapper>} />
           <Route path="/uploadPDF" element={<MotionWrapper><UploadPDF /></MotionWrapper>} />
         </Routes>
       </AnimatePresence>
