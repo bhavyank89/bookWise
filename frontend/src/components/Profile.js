@@ -21,8 +21,8 @@ const BorrowedBooksPage = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const res = await fetch("http://localhost:4000/fetchuser", {
-                    method: "POST",
+                const res = await fetch("http://localhost:4000/user/", {
+                    method: "GET",
                     headers: {
                         "Content-Type": "application/json",
                         "auth-token": localStorage.getItem("auth-token"),

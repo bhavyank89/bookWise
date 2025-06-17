@@ -87,7 +87,6 @@ function Login({ setIsLogin = () => { } }) {
             });
 
             const json = await response.json();
-
             if (response.ok && json.success) {
                 localStorage.setItem("auth-token", json.token);
                 setIsLogin(true);
