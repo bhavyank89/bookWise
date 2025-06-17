@@ -26,24 +26,27 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
         setSelectedRole('');
     };
 
-    const fetchUser = async () => {
+    const fetchUser = async (role) => {
         try {
+            const token = localStorage.getItem(role === "user" ? "userToken" : "adminToken");
+
             const res = await fetch("http://localhost:4000/user", {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "auth-token": localStorage.getItem("userToken"),
+                    "auth-token": token,
                 },
             });
+
             const json = await res.json();
-            setActiveUser(json);
-            setIsLogin(true);
-            return true;
+            if (res.ok) {
+                return { success: true, user: json };
+            } else {
+                return { success: false, error: json?.error || "Failed to fetch user" };
+            }
         } catch (err) {
             console.error("Error fetching user:", err);
-            setActiveUser({});
-            setIsLogin(false);
-            return false;
+            return { success: false, error: "Network error" };
         }
     };
 
@@ -52,34 +55,36 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
 
         closeModal();
 
-        if (selectedRole === "user") {
-            console.log("continue as user");
-            const token = localStorage.getItem('userToken');
-            let valid = false;
-            if (token) {
-                valid = await fetchUser();
-            }
-            if (valid) {
-                navigate("/dashboard");
-            } else {
-                navigate("/login");
-            }
+        const role = selectedRole.toLowerCase();
+        const tokenKey = role === "user" ? "userToken" : "adminToken";
+        const token = localStorage.getItem(tokenKey);
+        console.log(tokenKey);
+        if (!token) {
+            console.warn("No token found for role:", role);
+            role === "user" ? navigate("/login") : navigate("/adminLogin");
+            return;
         }
 
-        if (selectedRole === "admin") {
-            console.log("continue as admin");
-            const token = localStorage.getItem('adminToken');
-            let valid = false;
-            if (token) {
-                valid = await fetchUser();
-            }
-            if (valid) {
-                navigate("/");
+        const { success, user } = await fetchUser(role);
+
+        console.log("success : ", success);
+        console.log("user : ", user);
+
+        if (success && user) {
+            if (role === "user") {
+                setIsLogin(true);
+                setActiveUser(user);
+                navigate("/dashboard");
             } else {
-                navigate("/login");
+                window.location.href = 'http://localhost:3001';
             }
+        } else {
+            setIsLogin(false);
+            setActiveUser({});
+            navigate("/login");
         }
     };
+
 
     return (
         <AnimatePresence mode="wait">
