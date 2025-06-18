@@ -20,6 +20,7 @@ import Profile from "@/components/Profile";
 import UploadPDF from "@/components/UploadPDF";
 import Navbar from "@/components/Navbar";
 import Landing from "@/components/Landing";
+import Collection from "@/components/Collection";
 
 // Animation variants
 const fadeVariants = {
@@ -70,6 +71,7 @@ function MainApp() {
           <Route path="/dashboard" element={<MotionWrapper><MarginTop><Dashboard activeUser={activeUser} isLogin={isLogin} /></MarginTop></MotionWrapper>} />
           <Route path="/bookdetails/:id" element={<MotionWrapper><MarginTop><BookDetails activeUser={activeUser} isLogin={isLogin} /></MarginTop></MotionWrapper>} />
           <Route path="/search" element={<MotionWrapper><MarginTop><SearchPage activeUser={activeUser} isLogin={isLogin} /></MarginTop></MotionWrapper>} />
+          <Route path="/collections" element={<MotionWrapper><MarginTop><Collection activeUser={activeUser} isLogin={isLogin} /></MarginTop></MotionWrapper>} />
           <Route path="/profile" element={<MotionWrapper><MarginTop><Profile activeUser={activeUser} setActiveUser={setActiveUser} /></MarginTop></MotionWrapper>} />
           <Route path="/uploadPDF" element={<MotionWrapper><UploadPDF /></MotionWrapper>} />
         </Routes>

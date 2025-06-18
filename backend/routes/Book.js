@@ -252,6 +252,45 @@ router.put('/request/:id', fetchUser, async (req, res) => {
   }
 });
 
+// ------------------ WITHDRAW BORROW REQUEST -------------
+router.put('/withdraw/:id', fetchUser, async (req, res) => {
+  const user_Id = req.user.id;
+  const book_Id = req.params.id;
+
+  try {
+    const book = await Book.findById(book_Id);
+    if (!book) {
+      return res.status(404).json({ success: false, error: 'Book not found' });
+    }
+
+    const user = await User.findById(user_Id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // 🔍 Remove borrow request from book.borrowers
+    book.borrowers = book.borrowers.filter(
+      (entry) => !(entry.user.toString() === user_Id && entry.borrowed === false)
+    );
+
+    // 🔍 Remove unfulfilled borrow entry from user.borrowedBooks
+    user.borrowedBooks = user.borrowedBooks.filter(
+      (entry) => !(entry.book.toString() === book_Id && entry.borrowed === false)
+    );
+
+    await book.save();
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Borrow request withdrawn successfully',
+    });
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).json({ success: false, error: 'Internal Server Error' });
+  }
+});
+
 // ------------------ BORROW ISSUE --------------------------
 router.post('/borrow/:id', async (req, res) => {
   const user_Id = req.body.user_Id;

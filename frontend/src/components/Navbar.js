@@ -47,6 +47,9 @@ function Navbar({ setIsLogin, activeUser, setActiveUser }) {
                     <motion.button onClick={() => navigate("/search")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         Search
                     </motion.button>
+                    <motion.button onClick={() => navigate("/collections")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                        Collections
+                    </motion.button>
                     <motion.button
                         onClick={() => navigate("/profile")}
                         className="flex items-center gap-2"
@@ -96,6 +99,7 @@ function Navbar({ setIsLogin, activeUser, setActiveUser }) {
                                 { route: "/dashboard", label: "Home" },
                                 { route: "/search", label: "Search" },
                                 { route: "/profile", label: activeUser?.name || "User" },
+                                { route: "/collections", label:"Collections" },
                             ].map(({ route, label }) => (
                                 <motion.button
                                     key={route}
