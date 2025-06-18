@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 function Navbar({ setIsLogin, activeUser, setActiveUser }) {
     const navigate = useNavigate();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [activeRoute, setActiveRoute] = useState(window.location.pathname);
+
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -41,29 +43,61 @@ function Navbar({ setIsLogin, activeUser, setActiveUser }) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.2, duration: 0.6 }}
                 >
-                    <motion.button onClick={() => navigate("/dashboard")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.button
+                        onClick={() => {
+                            navigate("/dashboard");
+                            setActiveRoute("/dashboard");
+                        }}
+                        className={`${activeRoute === "/dashboard" ? "text-yellow-400" : ""} cursor-pointer`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
                         Home
                     </motion.button>
-                    <motion.button onClick={() => navigate("/search")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.button
+                        onClick={() => {
+                            navigate("/search");
+                            setActiveRoute("/search");
+                        }}
+                        className={`${activeRoute === "/search" ? "text-yellow-400" : ""} cursor-pointer`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
                         Search
                     </motion.button>
-                    <motion.button onClick={() => navigate("/collections")} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.button
+                        onClick={() => {
+                            navigate("/collections");
+                            setActiveRoute("/collections");
+                        }}
+                        className={`${activeRoute === "/collections" ? "text-yellow-400" : ""} cursor-pointer`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                    >
                         Collections
                     </motion.button>
                     <motion.button
-                        onClick={() => navigate("/profile")}
-                        className="flex items-center gap-2"
+                        onClick={() => {
+                            navigate("/profile");
+                            setActiveRoute("/profile");
+                        }}
+                        className={`${activeRoute === "/profile" ? "text-yellow-400" : ""} cursor-pointer flex gap-2`}
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                     >
                         {activeUser?.avatar?.[0]?.path ? (
-                            <img src={activeUser.avatar[0].path} alt="Avatar" className="w-8 h-8 rounded-full object-cover border-2 border-white" />
+                            <img
+                                src={activeUser.avatar[0].path}
+                                alt="Avatar"
+                                className={`w-8 h-8 rounded-full object-cover border-2 ${activeUser?.isVerified ? "border-green-500" : "border-white"}`}
+                            />
+
                         ) : (
                             <div className="bg-white text-black font-semibold px-3 py-1 rounded-full">
                                 {activeUser?.name?.[0]?.toUpperCase() || "U"}
                             </div>
                         )}
-                        <span className="font-medium text-gray-50">{activeUser?.name || "User"}</span>
+                        <span className={`${activeRoute === "/profile" ? "text-yellow-400" : ""} p-1 cursor-pointer font-medium text-gray-50`}>{activeUser?.name || "User"}</span>
                     </motion.button>
                     <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3, duration: 0.4 }}>
                         <LogoutUser setIsLogin={setIsLogin} />
@@ -99,7 +133,7 @@ function Navbar({ setIsLogin, activeUser, setActiveUser }) {
                                 { route: "/dashboard", label: "Home" },
                                 { route: "/search", label: "Search" },
                                 { route: "/profile", label: activeUser?.name || "User" },
-                                { route: "/collections", label:"Collections" },
+                                { route: "/collections", label: "Collections" },
                             ].map(({ route, label }) => (
                                 <motion.button
                                     key={route}
