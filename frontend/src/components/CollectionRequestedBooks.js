@@ -1,178 +1,208 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
+import toast from 'react-hot-toast';
 import BookCard from './BookCard';
+import Pagination from './Pagination';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 
-const ITEMS_PER_PAGE = 6;
-
-const RequestedBooks = ({ books }) => {
+const CollectionRequestedBooks = ({
+    activeUser,
+    borrowedBooks = [],
+    onDataRefresh,
+}) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [loadingWithdrawId, setLoadingWithdrawId] = useState(null);
-    const today = dayjs();
+    const [itemsPerPage, setItemsPerPage] = useState(6);
+    const [withdrawingId, setWithdrawingId] = useState(null);
 
-    const activeBooks = useMemo(
-        () => books?.filter(entry => entry.returnedAt === null) || [],
-        [books]
-    );
+    const requestedBooks = useMemo(() => {
+        return Array.isArray(borrowedBooks)
+            ? borrowedBooks.filter(
+                (b) => b && b.borrowed === false && b.returnedAt === null
+            )
+            : [];
+    }, [borrowedBooks]);
 
-    const totalPages = Math.ceil(activeBooks.length / ITEMS_PER_PAGE);
+    useEffect(() => {
+        const handleResize = () => {
+            const width = window.innerWidth;
+            if (width < 640) setItemsPerPage(3);
+            else if (width < 768) setItemsPerPage(4);
+            else if (width < 1024) setItemsPerPage(6);
+            else if (width < 1280) setItemsPerPage(8);
+            else setItemsPerPage(9);
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const totalPages = Math.ceil(requestedBooks.length / itemsPerPage);
     const paginatedBooks = useMemo(() => {
-        const start = (currentPage - 1) * ITEMS_PER_PAGE;
-        return activeBooks.slice(start, start + ITEMS_PER_PAGE);
-    }, [activeBooks, currentPage]);
+        const start = (currentPage - 1) * itemsPerPage;
+        return requestedBooks.slice(start, start + itemsPerPage);
+        console.log(paginatedBooks);
+    }, [requestedBooks, currentPage, itemsPerPage]);
 
-    const handleWithdraw = async (bookId) => {
-        setLoadingWithdrawId(bookId);
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+        }
+    }, [totalPages, currentPage]);
+
+    const handleWithdraw = async (borrowId) => {
+        console.log("console1");
+        console.log(borrowedBooks);
+        if (withdrawingId) return;
+
+        setWithdrawingId(borrowId);
+        let isMounted = true;
+
         try {
-            const token = localStorage.getItem("userToken");
-            if (!token) {
-                toast.error("Authentication token missing!");
-                return;
-            }
+            console.log("console2");
+            const token = localStorage.getItem('userToken');
+            if (!token) throw new Error('No auth token found');
 
-            const res = await fetch(`http://localhost:4000/book/withdraw/${bookId}`, {
+            const res = await fetch(`http://localhost:4000/book/withdraw/${borrowId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'auth-token': token,
-                },
                 credentials: 'include',
+                headers: {
+                    'auth-token': token,
+                    'Content-Type': 'application/json',
+                },
             });
 
-            const data = await res.json();
-
+            console.log("console3")
+            console.log(res);
             if (!res.ok) {
-                toast.error(data?.error || 'Failed to withdraw request');
-                console.error("Withdraw error response:", data);
-                return;
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to withdraw');
             }
-
-            toast.success('Request withdrawn successfully!');
-            // Optional: Refresh or trigger parent state update
-        } catch (err) {
-            console.error("Withdraw error:", err);
-            toast.error('Something went wrong while withdrawing.');
+            console.log("console4");
+            console.log(isMounted);
+            if (isMounted) {
+                console.log("console5");
+                toast.success('Request withdrawn successfully');
+                onDataRefresh?.();
+            }
+        } catch (error) {
+            console.error('Withdraw error:', error);
+            console.log("console6")
+            if (isMounted) {
+                toast.error(error.message || 'Withdraw failed');
+            }
         } finally {
-            setLoadingWithdrawId(null);
+            if (isMounted) {
+                setWithdrawingId(null);
+            }
         }
+
+        return () => {
+            isMounted = false;
+        };
     };
 
     return (
-        <div className="text-gray-100 p-4 rounded-xl shadow-inner">
-            <motion.h2
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="text-2xl font-bold mb-4 text-blue-400"
-            >
-                📌 Requested Books
-            </motion.h2>
+        <motion.div
+            className="text-gray-100 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+        >
+            <h2 className="text-xl sm:text-2xl font-bold text-green-400 tracking-wide mb-4">
+                📨 Requested Books
+            </h2>
 
-            {activeBooks.length > 0 ? (
+            {requestedBooks.length === 0 ? (
+                <div className="text-center py-10">
+                    <div className="text-5xl mb-4">📭</div>
+                    <p className="text-gray-400 italic text-lg">No requested books yet.</p>
+                    <p className="text-gray-500 text-sm mt-2">
+                        Books you request will appear here while pending approval.
+                    </p>
+                </div>
+            ) : (
                 <>
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[80vh] overflow-y-auto pr-1 pb-4 custom-scroll">
-                        <AnimatePresence>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 max-h-[90vh] overflow-y-auto pr-2 custom-scroll">
+                        <AnimatePresence mode="wait">
                             {paginatedBooks.map((entry, i) => {
-                                const {
-                                    book: bookId,
-                                    requestedAt,
-                                    borrowed,
-                                    borrowedAt,
-                                    dueDate,
-                                    lateFine,
-                                } = entry;
-
-                                const isOverdue = borrowed && dueDate && dayjs(dueDate).isBefore(today);
-                                const showWithdraw = !borrowed && !isOverdue;
+                                const book = entry.book;
+                                const bookId = typeof book === 'string' ? book : book?._id;
+                                const entryId = entry._id || `${bookId}-${i}`;
 
                                 return (
                                     <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.9 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="bg-gray-900 p-4 rounded-lg shadow space-y-2 text-sm transition-all duration-300"
+                                        key={entryId}
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ duration: 0.3, delay: i * 0.05 }}
+                                        className="bg-gray-900 rounded-lg p-3 sm:p-4 shadow border border-gray-700"
                                     >
-                                        <div className="hover:scale-[1.01] hover:shadow-xl cursor-pointer transition-transform duration-300">
-                                            <BookCard
-                                                bookId={bookId}
-                                                status={isOverdue ? "Overdue" : borrowed ? "Borrowed" : "Requested"}
-                                            />
+                                        <div className="hover:scale-[1.01] hover:shadow-xl transition-transform duration-300">
+                                            <BookCard bookId={bookId} book={book} status="Requested" />
                                         </div>
 
-                                        <div className="space-y-1 text-gray-300 mt-1">
-                                            <p><strong>Requested:</strong> {dayjs(requestedAt).format("DD MMM YYYY")}</p>
-                                            <p><strong>Borrowed:</strong> {borrowed ? dayjs(borrowedAt).format("DD MMM YYYY") : "-"}</p>
-                                            <p><strong>Due:</strong> {borrowed ? dayjs(dueDate).format("DD MMM YYYY") : "-"}</p>
-                                            <p><strong>Late Fine:</strong> {borrowed && lateFine > 0 ? `₹${lateFine}` : "-"}</p>
+                                        <div className="text-xs text-gray-300 mt-3 space-y-1">
+                                            <p>
+                                                <strong>Requested:</strong>{' '}
+                                                {entry.requestedAt
+                                                    ? dayjs(entry.requestedAt).format('DD MMM YYYY')
+                                                    : 'N/A'}
+                                            </p>
+                                            <p>
+                                                <strong>Status:</strong>{' '}
+                                                <span className="text-yellow-400">Pending Approval</span>
+                                            </p>
+                                            {entry.dueDate && (
+                                                <p>
+                                                    <strong>Expected Due:</strong>{' '}
+                                                    {dayjs(entry.dueDate).format('DD MMM YYYY')}
+                                                </p>
+                                            )}
                                         </div>
 
-                                        {showWithdraw && (
-                                            <button
-                                                onClick={() => handleWithdraw(bookId)}
-                                                disabled={loadingWithdrawId === bookId}
-                                                className={`w-full mt-2 py-2 rounded text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-in-out 
-                                                    ${loadingWithdrawId === bookId
-                                                        ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                                                        : "bg-red-600 text-white hover:bg-red-700 hover:scale-[1.02] hover:shadow-lg"
-                                                    }`}
-                                            >
-                                                {loadingWithdrawId === bookId ? "Withdrawing..." : "Withdraw Request"}
-                                            </button>
-                                        )}
+                                        <button
+                                            onClick={() => handleWithdraw(entry._id)}
+                                            disabled={withdrawingId === entry._id}
+                                            className={`w-full mt-3 py-2 px-3 rounded text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-in-out ${withdrawingId === entry._id
+                                                    ? 'bg-gray-700 text-gray-400 cursor-wait'
+                                                    : 'bg-red-600 text-white hover:bg-red-700 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer'
+                                                }`}
+                                        >
+                                            {withdrawingId === entry._id ? (
+                                                <>
+                                                    <Loader2 className="animate-spin w-4 h-4 mr-1" />
+                                                    Withdrawing...
+                                                </>
+                                            ) : (
+                                                'Withdraw Request'
+                                            )}
+                                        </button>
+
                                     </motion.div>
                                 );
                             })}
                         </AnimatePresence>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="flex flex-wrap justify-center gap-2 mt-6 text-sm">
-                        <button
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-50"
-                        >
-                            Prev
-                        </button>
-
-                        {Array.from({ length: totalPages }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setCurrentPage(i + 1)}
-                                className={`px-3 py-1 rounded transition ${currentPage === i + 1
-                                    ? "bg-blue-600 text-white"
-                                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                                    }`}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-
-                        <button
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1 rounded bg-gray-800 text-gray-300 hover:bg-gray-700 disabled:opacity-50"
-                        >
-                            Next
-                        </button>
-                    </div>
+                    {totalPages > 1 && (
+                        <div className="mt-6">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    )}
                 </>
-            ) : (
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-gray-500 italic"
-                >
-                    No requested or borrowed books found.
-                </motion.p>
             )}
-        </div>
+        </motion.div>
     );
 };
 
-export default RequestedBooks;
+export default CollectionRequestedBooks;

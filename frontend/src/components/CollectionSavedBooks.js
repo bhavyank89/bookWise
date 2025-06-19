@@ -1,147 +1,167 @@
-"use client";
-import React, { useState, useMemo, useEffect } from 'react';
-import BookCard from './BookCard';
+'use client';
+
+import React, { useMemo, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import dayjs from 'dayjs';
+import BookCard from './BookCard';
+import Pagination from './Pagination';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
-const SavedBooks = ({ books = [] }) => {
+const CollectionSavedBooks = ({
+    savedBooks = [],
+    activeUser,
+    onDataRefresh,
+}) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [loadingUnsaveId, setLoadingUnsaveId] = useState(null);
     const [itemsPerPage, setItemsPerPage] = useState(6);
+    const [unsavingId, setUnsavingId] = useState(null);
 
-    // Adjust items per page based on screen width
+    // Responsive itemsPerPage
     useEffect(() => {
-        const updateItemsPerPage = () => {
+        const handleResize = () => {
             const width = window.innerWidth;
-            if (width < 640) setItemsPerPage(4);
+            if (width < 640) setItemsPerPage(3);
+            else if (width < 768) setItemsPerPage(4);
             else if (width < 1024) setItemsPerPage(6);
+            else if (width < 1280) setItemsPerPage(8);
             else setItemsPerPage(9);
         };
-        updateItemsPerPage();
-        window.addEventListener('resize', updateItemsPerPage);
-        return () => window.removeEventListener('resize', updateItemsPerPage);
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const totalPages = Math.ceil(books.length / itemsPerPage);
+    // Pagination calculations
+    const totalPages = Math.ceil(savedBooks.length / itemsPerPage);
     const paginatedBooks = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return books.slice(start, start + itemsPerPage);
-    }, [books, currentPage, itemsPerPage]);
+        return savedBooks.slice(start, start + itemsPerPage);
+    }, [savedBooks, currentPage, itemsPerPage]);
 
+    useEffect(() => {
+        if (currentPage > totalPages && totalPages > 0) {
+            setCurrentPage(1);
+        }
+    }, [totalPages, currentPage]);
+
+    // Handle unsave request
     const handleUnsave = async (bookId) => {
-        setLoadingUnsaveId(bookId);
+        if (unsavingId) return;
+        setUnsavingId(bookId);
+
+        let isMounted = true;
+
         try {
             const res = await fetch(`http://localhost:4000/user/unsavebook/${bookId}`, {
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
-                    "auth-token": localStorage.getItem("userToken"),
-                }
+                    'auth-token': localStorage.getItem('userToken'),
+                },
             });
-            if (!res.ok) throw new Error('Unsave failed');
-            toast.success('Book unsaved!');
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Failed to unsave');
+            }
+
+            if (isMounted) {
+                toast.success('Book unsaved');
+                onDataRefresh?.();
+            }
         } catch (err) {
-            console.error(err);
-            toast.error('Failed to unsave the book.');
+            console.error('Unsave error:', err);
+            if (isMounted) {
+                toast.error(err.message || 'Unsave failed');
+            }
         } finally {
-            setLoadingUnsaveId(null);
+            if (isMounted) {
+                setUnsavingId(null);
+            }
         }
+
+        return () => {
+            isMounted = false;
+        };
     };
 
     return (
         <motion.div
+            className="text-gray-100 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className="text-gray-100 p-4 md:p-6 rounded-lg shadow-lg"
         >
-            <h2 className="text-2xl text-orange-300 font-bold mb-6 tracking-wide">💾 Saved Books</h2>
+            <h2 className="text-xl sm:text-2xl font-bold text-purple-400 tracking-wide mb-4">
+                💾 Saved Books
+            </h2>
 
-            {books?.length > 0 ? (
+            {savedBooks.length === 0 ? (
+                <div className="text-center py-10">
+                    <div className="text-5xl">📁</div>
+                    <p className="text-gray-400 italic mt-2">No saved books yet.</p>
+                </div>
+            ) : (
                 <>
-                    <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5 max-h-[75vh] overflow-y-auto pr-2 custom-scroll">
-                        <AnimatePresence>
-                            {paginatedBooks.map((entry, i) => (
-                                <motion.div
-                                    key={entry.book}
-                                    layout
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="bg-gray-900 p-3 rounded-md shadow transition-all duration-300 space-y-2 text-sm"
-                                >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 sm:gap-5 max-h-[90vh] overflow-y-auto pr-2 custom-scroll">
+                        <AnimatePresence mode="wait">
+                            {paginatedBooks.map((entry, i) => {
+                                const book = entry.book;
+                                const bookId = typeof book === 'string' ? book : book?._id;
+                                const key = `${bookId}-${i}`;
+                                if (!bookId) return null;
 
-                                    <div className="hover:scale-[1.01] hover:shadow-xl cursor-pointer transition-transform duration-300">
-                                        <BookCard bookId={entry.book} status="Saved" />
-                                    </div>
-
-                                    <div className="text-gray-300 mt-1">
-                                        <p><strong>Saved At:</strong> {dayjs(entry.savedAt).format("DD MMM YYYY, hh:mm A")}</p>
-                                    </div>
-
-                                    <button
-                                        onClick={() => handleUnsave(entry.book)}
-                                        disabled={loadingUnsaveId === entry.book}
-                                        className={`w-full mt-2 py-2 rounded text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-in-out ${loadingUnsaveId === entry.book
-                                            ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                                            : "bg-red-600 text-white hover:bg-red-700 hover:scale-[1.02] hover:shadow-lg"
-                                            }`}
+                                return (
+                                    <motion.div
+                                        key={key}
+                                        layout
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ duration: 0.3, delay: i * 0.05 }}
+                                        className="bg-gray-900 rounded-lg p-3 sm:p-4 shadow"
                                     >
-                                        {loadingUnsaveId === entry.book ? (
-                                            <>
-                                                <Loader2 className="animate-spin w-4 h-4 mr-1" />
-                                                Unsaving...
-                                            </>
-                                        ) : (
-                                            "Unsave"
-                                        )}
-                                    </button>
-                                </motion.div>
+                                        <div className="hover:scale-[1.01] hover:shadow-xl transition-transform duration-300">
+                                            <BookCard bookId={bookId} book={book} status="Saved" />
+                                        </div>
 
-                            ))}
+                                        <button
+                                            onClick={() => handleUnsave(bookId)}
+                                            disabled={unsavingId === bookId}
+                                            className={`w-full cursor-pointer mt-3 py-2 px-3 rounded text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-in-out ${unsavingId === bookId
+                                                    ? 'bg-gray-700 text-gray-400 cursor-wait'
+                                                    : 'bg-red-600 text-white hover:bg-red-700 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]'
+                                                }`}
+                                        >
+                                            {unsavingId === bookId ? (
+                                                <>
+                                                    <Loader2 className="animate-spin w-4 h-4 mr-1" />
+                                                    Removing...
+                                                </>
+                                            ) : (
+                                                'Unsave'
+                                            )}
+                                        </button>
+                                    </motion.div>
+                                );
+                            })}
                         </AnimatePresence>
                     </div>
 
-                    {/* Pagination */}
-                    <div className="flex flex-wrap justify-center items-center mt-8 gap-2 text-sm">
-                        <button
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="px-3 py-1.5 rounded bg-gray-800 text-white hover:bg-gray-700 disabled:opacity-50"
-                        >
-                            Prev
-                        </button>
-                        <div className="flex flex-wrap gap-1 overflow-x-auto max-w-[300px] custom-scroll scrollbar-thin">
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <button
-                                    key={i}
-                                    onClick={() => setCurrentPage(i + 1)}
-                                    className={`px-3 py-1.5 rounded transition-all ${currentPage === i + 1
-                                        ? "bg-orange-600 text-white"
-                                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                                        }`}
-                                >
-                                    {i + 1}
-                                </button>
-                            ))}
+                    {totalPages > 1 && (
+                        <div className="mt-6">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
                         </div>
-                        <button
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages}
-                            className="px-3 py-1.5 rounded bg-gray-800 text-white hover:bg-gray-700 disabled:opacity-50"
-                        >
-                            Next
-                        </button>
-                    </div>
+                    )}
                 </>
-            ) : (
-                <p className="text-gray-400 italic">No saved books found.</p>
             )}
         </motion.div>
     );
 };
 
-export default SavedBooks;
+export default CollectionSavedBooks;
