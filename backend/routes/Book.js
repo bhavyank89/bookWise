@@ -15,12 +15,11 @@ import User from "../models/User.js";
 const router = express.Router();
 
 // ------------------ CREATE BOOK ------------------
-router.post("/createbook",
-  upload.fields([
-    { name: "uploadPDF", maxCount: 1 },
-    { name: "uploadThumbnail", maxCount: 1 },
-    { name: "uploadVideo", maxCount: 1 },
-  ]),
+router.post("/createbook", upload.fields([
+  { name: "uploadPDF", maxCount: 1 },
+  { name: "uploadThumbnail", maxCount: 1 },
+  { name: "uploadVideo", maxCount: 1 },
+]),
   handleMulterError,
   async (req, res) => {
     try {
@@ -31,13 +30,15 @@ router.post("/createbook",
         summary,
         count: countRaw,
         bookType,
+        pdfURL,
+        thumbnailURL,
+        videoURL,
       } = req.body;
 
       if (!title || !author || !summary || !bookType) {
         return res.status(400).json({
           success: false,
-          error:
-            "Missing required fields: title, author, summary, and bookType are required.",
+          error: "Missing required fields: title, author, summary, and bookType are required.",
         });
       }
 
@@ -62,18 +63,18 @@ router.post("/createbook",
       const thumbnailFile = req.files?.uploadThumbnail?.[0];
       const videoFile = req.files?.uploadVideo?.[0];
 
-      // Validate required files
-      if ((bookType === "ebook" || bookType === "both") && !pdfFile) {
+      // Validate file OR URL
+      if ((bookType === "ebook" || bookType === "both") && !pdfFile && !pdfURL) {
         return res.status(400).json({
           success: false,
-          error: "PDF file is required for ebooks.",
+          error: "PDF file or PDF URL is required for ebooks.",
         });
       }
 
-      if (!thumbnailFile) {
+      if (!thumbnailFile && !thumbnailURL) {
         return res.status(400).json({
           success: false,
-          error: "Thumbnail image is required.",
+          error: "Thumbnail (file or URL) is required.",
         });
       }
 
@@ -84,7 +85,7 @@ router.post("/createbook",
       try {
         const uploadPromises = [
           pdfFile ? uploadToCloudinary(pdfFile.path, "books/pdf") : Promise.resolve(null),
-          uploadToCloudinary(thumbnailFile.path, "books/thumbnails"),
+          thumbnailFile ? uploadToCloudinary(thumbnailFile.path, "books/thumbnails") : Promise.resolve(null),
           videoFile ? uploadToCloudinary(videoFile.path, "books/videos") : Promise.resolve(null),
         ];
 
@@ -93,6 +94,7 @@ router.post("/createbook",
         [pdfFile, thumbnailFile, videoFile].forEach((file) => {
           if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path);
         });
+
         return res.status(500).json({
           success: false,
           error: "File upload failed",
@@ -100,12 +102,12 @@ router.post("/createbook",
         });
       }
 
-      // Cleanup local files
+      // Cleanup local temp files
       [pdfFile, thumbnailFile, videoFile].forEach((file) => {
         if (file && fs.existsSync(file.path)) fs.unlinkSync(file.path);
       });
 
-      // Create book data
+      // Assemble book data
       const bookData = {
         title,
         author,
@@ -114,11 +116,17 @@ router.post("/createbook",
         bookType,
         borrowers: [],
         savedBy: [],
-        pdfCloudinary: pdfResult || null,
-        thumbnailCloudinary: thumbnailResult || null,
-        videoCloudinary: videoResult || null,
         count: 0,
         available: 0,
+
+        pdfCloudinary: pdfResult || null,
+        pdfURL: pdfURL || null,
+
+        thumbnailCloudinary: thumbnailResult || null,
+        thumbnailURL: thumbnailURL || null,
+
+        videoCloudinary: videoResult || null,
+        videoURL: videoURL || null,
       };
 
       if (bookType === "physical" || bookType === "both") {
@@ -127,7 +135,6 @@ router.post("/createbook",
       }
 
       const newBook = new Book(bookData);
-      console.log("new Book : ", newBook);
 
       await newBook.validate();
       await newBook.save();
@@ -445,8 +452,12 @@ router.get('/all-requests', async (req, res) => {
           title: book.title,
           author: book.author,
           genre: book.genre,
-          bookThumbnailCloudinary: book.thumbnailCloudinary || null,
           bookType: book.bookType,
+
+          bookThumbnailCloudinary: book.thumbnailCloudinary || null,
+          thumbnailURL: book.thumbnailURL || null,
+          pdfURL: book.pdfURL || null,
+          videoURL: book.videoURL || null,
 
           userId: user._id,
           uniId: user.uniId,
@@ -460,6 +471,7 @@ router.get('/all-requests', async (req, res) => {
           dueDate: entry.dueDate || null,
           lateFine: entry.lateFine || 0,
         });
+
       }
     }
 
@@ -602,7 +614,11 @@ router.post("/borrowedHistory", async (req, res) => {
           title: book.title,
           author: book.author,
           genre: book.genre,
+          bookType: book.bookType,
           bookThumbnail: book.thumbnailCloudinary || null,
+          thumbnailURL: book.thumbnailURL || null,
+          pdfURL: book.pdfURL || null,
+          videoURL: book.videoURL || null,
 
           // 🔹 User info
           userId: user._id,
@@ -618,6 +634,7 @@ router.post("/borrowedHistory", async (req, res) => {
           lateFine: entry.lateFine || 0,
           currentlyBorrowed: !entry.returnedAt, // true if not yet returned
         });
+
       }
     }
 
@@ -640,24 +657,31 @@ router.get('/all-borrow-history', async (req, res) => {
 
     const combinedHistory = users.flatMap(user =>
       user.borrowHistory.map(history => ({
+        // 🔹 User Info
         userId: user._id,
         userName: user.name,
         userEmail: user.email,
         userUniId: user.uniId || null,
         userAvatar: user.avatar || null,
 
+        // 🔹 Book Info
         bookId: history.book?._id || null,
         bookTitle: history.book?.title || 'Deleted Book',
         bookAuthor: history.book?.author || 'Unknown',
         bookType: history.book?.bookType || 'N/A',
         bookThumbnailCloudinary: history.book?.thumbnailCloudinary || null,
+        thumbnailURL: history.book?.thumbnailURL || null,
+        pdfURL: history.book?.pdfURL || null,
+        videoURL: history.book?.videoURL || null,
 
+        // 🔹 Borrow Details
         requestedAt: history.requestedAt,
         borrowedAt: history.borrowedAt,
         dueDate: history.dueDate,
         returnedAt: history.returnedAt,
         lateFine: history.lateFine,
       }))
+
     );
 
     // Sort by returnedAt descending
@@ -671,7 +695,6 @@ router.get('/all-borrow-history', async (req, res) => {
 });
 
 // ------------------ UPDATE BOOK ------------------
-// Added fetchUser middleware here for authentication protection
 router.put("/update/:id", upload.fields([
   { name: "uploadPDF", maxCount: 1 },
   { name: "uploadThumbnail", maxCount: 1 },
@@ -682,7 +705,6 @@ router.put("/update/:id", upload.fields([
     try {
       const { id } = req.params;
       const book = await Book.findById(id);
-
       if (!book) {
         return res.status(404).json({ success: false, error: "Book not found" });
       }
@@ -694,21 +716,28 @@ router.put("/update/:id", upload.fields([
         count,
         available,
         summary,
+        bookType,
+        pdfURL,
+        thumbnailURL,
+        videoURL,
       } = req.body;
 
-      book.title = title || book.title;
-      book.author = author || book.author;
-      book.genre = genre || book.genre;
-      book.summary = summary || book.summary;
+      // Basic fields
+      if (title) book.title = title;
+      if (author) book.author = author;
+      if (genre) book.genre = genre;
+      if (summary) book.summary = summary;
+      if (bookType) book.bookType = bookType;
 
+      // Count and availability
       if (count !== undefined) {
         const parsedCount = parseInt(count, 10);
         if (isNaN(parsedCount) || parsedCount < 0) {
           return res.status(400).json({ success: false, error: "Invalid count value" });
         }
         book.count = parsedCount;
-        if (book.available > book.count) {
-          book.available = book.count;
+        if (book.available > parsedCount) {
+          book.available = parsedCount;
         }
       }
 
@@ -718,39 +747,73 @@ router.put("/update/:id", upload.fields([
           return res.status(400).json({ success: false, error: "Invalid available value" });
         }
         if (parsedAvailable > book.count) {
-          return res.status(400).json({ success: false, error: "Available count cannot exceed total count" });
+          return res.status(400).json({
+            success: false,
+            error: "Available count cannot exceed total count",
+          });
         }
         book.available = parsedAvailable;
       }
 
+      // Handle files (upload or replace)
       const { uploadPDF, uploadThumbnail, uploadVideo } = req.files;
 
-      if (uploadPDF && uploadPDF.length > 0) {
-        const newPdf = uploadPDF[0].path;
-        const updatedPdf = await updateCloudinary(book.pdfCloudinary.public_id, newPdf, "books/pdf");
-        book.pdfCloudinary = updatedPdf;
-        if (fs.existsSync(newPdf)) fs.unlinkSync(newPdf);
-      }
-
+      // ----- Thumbnail -----
       if (uploadThumbnail && uploadThumbnail.length > 0) {
-        const newThumbnail = uploadThumbnail[0].path;
-        const updatedThumbnail = await updateCloudinary(book.thumbnailCloudinary.public_id, newThumbnail, "books/thumbnails");
-        book.thumbnailCloudinary = updatedThumbnail;
-        if (fs.existsSync(newThumbnail)) fs.unlinkSync(newThumbnail);
+        const newPath = uploadThumbnail[0].path;
+        const updated = await updateCloudinary(
+          book.thumbnailCloudinary?.public_id,
+          newPath,
+          "books/thumbnails"
+        );
+        book.thumbnailCloudinary = updated;
+        fs.existsSync(newPath) && fs.unlinkSync(newPath);
+      } else if (thumbnailURL) {
+        const uploaded = await uploadToCloudinaryFromURL(
+          thumbnailURL,
+          "books/thumbnails"
+        );
+        book.thumbnailCloudinary = uploaded;
       }
 
+      // ----- PDF -----
+      if (uploadPDF && uploadPDF.length > 0) {
+        const newPath = uploadPDF[0].path;
+        const updated = await updateCloudinary(
+          book.pdfCloudinary?.public_id,
+          newPath,
+          "books/pdf"
+        );
+        book.pdfCloudinary = updated;
+        fs.existsSync(newPath) && fs.unlinkSync(newPath);
+      } else if (pdfURL) {
+        const uploaded = await uploadToCloudinaryFromURL(pdfURL, "books/pdf");
+        book.pdfCloudinary = uploaded;
+      }
+
+      // ----- Video -----
       if (uploadVideo && uploadVideo.length > 0) {
-        const newVideo = uploadVideo[0].path;
-        const updatedVideo = await updateCloudinary(book.videoCloudinary.public_id, newVideo, "books/videos");
-        book.videoCloudinary = updatedVideo;
-        if (fs.existsSync(newVideo)) fs.unlinkSync(newVideo);
+        const newPath = uploadVideo[0].path;
+        const updated = await updateCloudinary(
+          book.videoCloudinary?.public_id,
+          newPath,
+          "books/videos"
+        );
+        book.videoCloudinary = updated;
+        fs.existsSync(newPath) && fs.unlinkSync(newPath);
+      } else if (videoURL) {
+        const uploaded = await uploadToCloudinaryFromURL(videoURL, "books/videos");
+        book.videoCloudinary = uploaded;
       }
 
       await book.save();
       res.json({ success: true, book });
     } catch (err) {
       console.error("Update book error:", err);
-      res.status(500).json({ success: false, error: err.message || "Internal server error" });
+      res.status(500).json({
+        success: false,
+        error: err.message || "Internal server error",
+      });
     }
   }
 );
