@@ -4,11 +4,14 @@ import { BadgeCheck, Pencil } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import ProfileEditModal from "@/components/ProfileEditModal";
 
 const Profile = () => {
     const [activeUser, setActiveUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
     const [userData, setUserData] = useState({
         avatar: "",
         name: "",
@@ -56,20 +59,30 @@ const Profile = () => {
         setIsModalOpen(true);
     };
 
-    const handleCloseModal = () => setIsModalOpen(false);
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
 
     const handleFileChange = (e) => {
         const { name, files } = e.target;
-        setUserData((prev) => ({ ...prev, [`${name}File`]: files[0] }));
+        setUserData((prev) => ({
+            ...prev,
+            [`${name}File`]: files[0],
+        }));
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setUserData((prev) => ({ ...prev, [name]: value }));
+        setUserData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
+
         const formData = new FormData();
         formData.append("name", userData.name);
         formData.append("email", userData.email);
@@ -80,7 +93,9 @@ const Profile = () => {
         try {
             const res = await fetch("http://localhost:4000/auth/updateuser", {
                 method: "POST",
-                headers: { "auth-token": localStorage.getItem("userToken") },
+                headers: {
+                    "auth-token": localStorage.getItem("userToken"),
+                },
                 body: formData,
             });
 
@@ -94,12 +109,13 @@ const Profile = () => {
             }
         } catch (err) {
             toast.error(err.message || "Error updating data");
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
         <main className="min-h-screen text-white px-4 sm:px-6 md:px-10 py-8 font-sans max-w-screen-xl mx-auto w-full">
-            {/* Profile Section - Centered on large screens */}
             <motion.div
                 className="flex flex-col items-center lg:flex-row lg:justify-center gap-8"
                 initial={{ opacity: 0 }}
@@ -144,21 +160,21 @@ const Profile = () => {
                                     )}
                                     <button
                                         onClick={handleOpenModal}
-                                        className="text-blue-400 ml-auto"
+                                        className="text-blue-400 cursor-pointer ml-auto"
                                     >
                                         <Pencil size={18} />
                                     </button>
                                 </p>
                                 <p className="text-sm text-gray-400">
-                                    <span className="font-semibold text-white mr-2">Name:</span>{" "}
+                                    <span className="font-semibold text-white mr-2">Name:</span>
                                     {activeUser?.name || "Student"}
                                 </p>
                                 <p className="text-sm text-gray-400">
-                                    <span className="font-semibold text-white mr-2">Email ID:</span>{" "}
+                                    <span className="font-semibold text-white mr-2">Email ID:</span>
                                     {activeUser?.email || "example@student.com"}
                                 </p>
                                 <p className="text-sm text-gray-400">
-                                    <span className="font-semibold text-white mr-2">Student ID:</span>{" "}
+                                    <span className="font-semibold text-white mr-2">Student ID:</span>
                                     {activeUser?.uniId || "N/A"}
                                 </p>
                             </div>
@@ -179,87 +195,17 @@ const Profile = () => {
                 </motion.div>
             </motion.div>
 
-            {/* Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-10 overflow-y-auto">
-                        <motion.div
-                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-                            onClick={handleCloseModal}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{ duration: 0.5 }}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, y: 100 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 100 }}
-                            transition={{ duration: 0.5, ease: "easeInOut" }}
-                            className="relative bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 sm:p-8 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl shadow-2xl my-8 max-h-[90vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent"
-                        >
-                            <h2 className="text-2xl font-bold text-white mb-6">
-                                Edit Profile
-                            </h2>
-
-                            <form onSubmit={handleSubmit}>
-                                {["name", "email", "uniId"].map((field) => (
-                                    <div key={field} className="mb-4">
-                                        <label className="block text-sm font-medium text-white/90 mb-2 capitalize">
-                                            {field === "uniId" ? "University ID" : field}
-                                        </label>
-                                        <input
-                                            type="text"
-                                            name={field}
-                                            value={userData[field]}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all duration-300"
-                                        />
-                                    </div>
-                                ))}
-
-                                <div className="mb-4">
-                                    <label className="block text-sm font-medium text-white/90 mb-2">
-                                        Avatar
-                                    </label>
-                                    <input
-                                        type="file"
-                                        name="avatar"
-                                        onChange={handleFileChange}
-                                        className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30 file:cursor-pointer transition-all duration-300"
-                                    />
-                                </div>
-
-                                <div className="mb-6">
-                                    <label className="block text-sm font-medium text-white/90 mb-2">
-                                        University ID Document
-                                    </label>
-                                    <input
-                                        type="file"
-                                        name="uniId"
-                                        onChange={handleFileChange}
-                                        className="w-full px-4 py-3 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white/20 file:text-white hover:file:bg-white/30 file:cursor-pointer transition-all duration-300"
-                                    />
-                                </div>
-
-                                <div className="flex flex-col sm:flex-row gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={handleCloseModal}
-                                        className="w-full sm:w-1/2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-full font-semibold transition-all duration-300"
-                                    >
-                                        Close
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        className="w-full sm:w-1/2 bg-[#F79B72] hover:bg-orange-500 text-black px-6 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-orange-400/30"
-                                    >
-                                        Save Changes
-                                    </button>
-                                </div>
-                            </form>
-                        </motion.div>
-                    </div>
+                    <ProfileEditModal
+                        isOpen={isModalOpen}
+                        onClose={handleCloseModal}
+                        onSubmit={handleSubmit}
+                        userData={userData}
+                        onChange={handleChange}
+                        onFileChange={handleFileChange}
+                        submitting={submitting}
+                    />
                 )}
             </AnimatePresence>
         </main>
