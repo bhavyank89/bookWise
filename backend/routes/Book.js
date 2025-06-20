@@ -863,7 +863,6 @@ router.delete("/delete/:id", async (req, res) => {
   }
 });
 
-
 // ------------------ FORCE DELETE BOOK (Admin) ------------------
 router.delete("/forceDelete/:id", async (req, res) => {
   try {

@@ -7,11 +7,14 @@ import uploadUser from '../middlewares/uploadUser.js';
 import fetchUser from '../middlewares/FetchUser.js';
 import { uploadAndCloudinary, uploadAndProcessFiles } from '../middlewares/updateUser.js';
 import { v2 as cloudinary } from 'cloudinary';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const router = express.Router();
 router.use(express.json());
 
-const JWT_SECRET = 'bookWise@'; // Hardcoded secret (avoid in production)
+const JWT_SECRET = process.env.JWT_SIGNATURE;
 
 // ---------------- Register Route ----------------
 router.post('/createUser/', uploadUser, async (req, res) => {

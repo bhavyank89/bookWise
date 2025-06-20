@@ -10,15 +10,18 @@ import bookRoutes from './routes/Book.js';
 import userRoutes from './routes/User.js';
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.SERVER_PORT || 4000;
 
 // Connect to MongoDB
 connectToMongoose();
 
+const ADMIN_URL = process.env.ADMIN_URL;
+const MAIN_URL = process.env.MAIN_URL;
+
 // Middleware
 const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
+    `${ADMIN_URL}`,
+    `${MAIN_URL}`,
 ];
 
 app.use(cors({

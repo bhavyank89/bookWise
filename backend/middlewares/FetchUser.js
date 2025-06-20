@@ -1,8 +1,11 @@
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const JWT_Signature = process.env.JWT_SIGNATURE;
 
 const FetchUser = (req, res, next) => {
     const token = req.header('auth-token');
-    const JWT_Signature = "bookWise@";
 
     if (!token) {
         return res.status(401).json({ error: "Please authenticate using a valid token" });
