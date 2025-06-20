@@ -35,7 +35,7 @@ const BookCard = ({ bookId, status }) => {
     return (
         <div onClick={() => { handleCardClick(bookId) }} className="bg-gray-900 text-gray-100 cursor-pointer p-4 rounded-lg shadow-md hover:shadow-lg transition duration-300 ease-in-out">
             <img
-                src={book.thumbnailCloudinary?.secure_url || "/fallback.png"}
+                src={book.thumbnailCloudinary?.secure_url || book.thumbnailURL || "/fallback.png"}
                 alt={book.title}
                 className="w-full h-48 object-cover rounded-md mb-3"
             />

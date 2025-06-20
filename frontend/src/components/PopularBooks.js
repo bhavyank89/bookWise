@@ -68,7 +68,7 @@ const PopularBooks = ({ loading, books, handleBookClick }) => {
                                 onClick={() => handleBookClick(book._id)}
                             >
                                 <img
-                                    src={book.thumbnailCloudinary?.secure_url || "/fury.png"}
+                                    src={book.thumbnailCloudinary?.secure_url || (book.thumbnailURL ? book.thumbnailURL : "/fury.png")}
                                     alt={book.title ? `Cover of ${book.title}` : "Book cover"}
                                     loading="lazy"
                                     className="w-full h-full object-cover rounded-sm"

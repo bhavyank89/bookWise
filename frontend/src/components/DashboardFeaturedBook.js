@@ -128,7 +128,7 @@ function DashboardFeaturedBook({
                             <div className="group xs:ml-2 lg:ml-80 mb-8 relative w-[276px] h-[385px] mx-auto">
                                 <img
                                     onClick={() => handleBookClick(featuredBook._id)}
-                                    src={featuredBook.thumbnailCloudinary?.secure_url || "/origin-blue.png"}
+                                    src={featuredBook.thumbnailCloudinary?.secure_url || (featuredBook.thumbnailURL ? featuredBook.thumbnailURL : "/origin-blue.png")}
                                     alt={featuredBook.title || "Featured Book Cover"}
                                     className="absolute top-0 left-0 w-[276px] h-[385px] rounded-xl object-cover z-10 transition-transform duration-500 ease-in-out group-hover:-translate-y-2 hover:cursor-pointer"
                                     style={{
@@ -138,7 +138,7 @@ function DashboardFeaturedBook({
                                     }}
                                 />
                                 <img
-                                    src={featuredBook.thumbnailCloudinary?.secure_url || "/origin-blue.png"}
+                                    src={featuredBook.thumbnailCloudinary?.secure_url || (featuredBook.thumbnailURL ? featuredBook.thumbnailURL : "/origin-blue.png")}
                                     alt="Blurred Featured Book Cover"
                                     className="absolute top-1 left-6 w-[276px] h-[385px] rounded-xl blur-sm opacity-80 z-0 transition-transform duration-500 ease-in-out group-hover:-translate-y-1"
                                     style={{

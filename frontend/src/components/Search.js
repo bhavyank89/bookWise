@@ -114,7 +114,7 @@ const SearchPage = () => {
             )}
 
             {/* Book Grid */}
-            <section className="mt-6 px-2 sm:px-4 lg:px-6">
+            <section className="mt-6 px-2 sm:px-4 pb-16 lg:px-6">
                 {loading ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
                         {[...Array(itemsPerPage)].map((_, index) => (
@@ -183,8 +183,7 @@ const SearchPage = () => {
             <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
-                className="mt-10"
+                setCurrentPage={setCurrentPage}
             />
         </main>
     );

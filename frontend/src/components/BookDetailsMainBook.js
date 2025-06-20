@@ -68,7 +68,7 @@ function BookDetailsMainBook({ bookId }) {
     useEffect(() => {
         const fetchData = async () => {
             if (!bookId) return;
-            
+
             setLoading(true);
             const bookData = await fetchBookData(bookId);
             setBook(bookData);
@@ -80,10 +80,10 @@ function BookDetailsMainBook({ bookId }) {
 
     // Memoized user ID to prevent unnecessary recalculations
     const userId = useMemo(() => activeUser?._id, [activeUser?._id]);
-    
+
     // Memoized borrowers array to prevent deep comparison issues
     const borrowers = useMemo(() => book?.borrowers || [], [book?.borrowers]);
-    
+
     // Memoized savedBy array to prevent deep comparison issues
     const savedBy = useMemo(() => book?.savedBy || [], [book?.savedBy]);
 
@@ -320,7 +320,7 @@ function BookDetailsMainBook({ bookId }) {
                 <div className="w-full lg:w-1/3">
                     <div className="relative w-full max-w-xs mx-auto lg:max-w-none">
                         <img
-                            src={book?.thumbnailCloudinary?.secure_url || "/origin-blue.png"}
+                            src={book?.thumbnailCloudinary?.secure_url || book.thumbnailURL || "/origin-blue.png"}
                             alt={book?.title || "Book Image"}
                             className="w-full h-64 sm:h-80 lg:h-96 rounded-lg object-cover shadow-2xl transition-all duration-500 hover:scale-105 hover:shadow-3xl"
                             loading="lazy"
@@ -426,22 +426,59 @@ function BookDetailsMainBook({ bookId }) {
             </section>
 
             {/* Video Section - Only show if video exists */}
-            {book?.videoCloudinary?.secure_url && (
+            {(book?.videoCloudinary?.secure_url || book?.videoURL) && (
                 <section className="mb-12">
                     <h3 className="text-xl font-semibold mb-4 transition-colors duration-300">Preview Video</h3>
                     <div className="aspect-video bg-gray-800 rounded-lg overflow-hidden transition-transform duration-300 hover:scale-[1.02]">
-                        <video
-                            className="w-full h-full object-cover transition-opacity duration-300"
-                            controls
-                            poster="thumbnail.jpg"
-                            preload="metadata"
-                        >
-                            <source src={book.videoCloudinary.secure_url} type="video/mp4" />
-                            Your browser does not support the video tag.
-                        </video>
+                        {(() => {
+                            const url = book?.videoCloudinary?.secure_url || book?.videoURL;
+
+                            // YouTube
+                            const isYouTube = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/.exec(url);
+                            if (isYouTube) {
+                                const videoId = isYouTube[1];
+                                return (
+                                    <iframe
+                                        src={`https://www.youtube.com/embed/${videoId}`}
+                                        title="YouTube video player"
+                                        allowFullScreen
+                                        className="w-full h-full"
+                                    ></iframe>
+                                );
+                            }
+
+                            // Google Drive
+                            const isGoogleDrive = /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\//.exec(url);
+                            if (isGoogleDrive) {
+                                const fileId = isGoogleDrive[1];
+                                return (
+                                    <iframe
+                                        src={`https://drive.google.com/file/d/${fileId}/preview`}
+                                        allow="autoplay"
+                                        className="w-full h-full"
+                                        title="Google Drive Video"
+                                    ></iframe>
+                                );
+                            }
+
+                            // Fallback: Render as HTML5 video
+                            return (
+                                <video
+                                    className="w-full h-full object-cover transition-opacity duration-300"
+                                    controls
+                                    preload="metadata"
+                                    poster="/thumbnail.jpg"
+                                >
+                                    <source src={url} type="video/mp4" />
+                                    Your browser does not support the video tag.
+                                </video>
+                            );
+                        })()}
                     </div>
                 </section>
             )}
+
+
         </>
     );
 }

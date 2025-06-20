@@ -148,7 +148,7 @@ function BookDetailsPopularBooks({ bookId }) {
                             >
                                 <div className="relative overflow-hidden rounded-md mb-3">
                                     <img
-                                        src={book?.thumbnailCloudinary?.secure_url || "/origin-blue.png"}
+                                        src={book?.thumbnailCloudinary?.secure_url || book.thumbnailURL || "/origin-blue.png"}
                                         alt={book.title}
                                         className="w-full h-36 lg:h-40 xl:h-44 object-cover transition-transform duration-300 hover:scale-110"
                                         loading="lazy"
