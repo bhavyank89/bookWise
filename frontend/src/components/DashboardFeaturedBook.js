@@ -31,24 +31,6 @@ function DashboardFeaturedBook({
         return () => clearInterval(scrollIntervalRef.current);
     }, [featuredBooks, loading, borrowLoading, saveLoading, setFeaturedBook]);
 
-    const handleBorrow = () => {
-        setBorrowLoading(true);
-        clearInterval(scrollIntervalRef.current);
-        setTimeout(() => {
-            toast.success("Book borrow request submitted successfully!");
-            setBorrowLoading(false);
-        }, 1500);
-    };
-
-    const handleSave = () => {
-        setSaveLoading(true);
-        clearInterval(scrollIntervalRef.current);
-        setTimeout(() => {
-            toast.success("Book saved to your collection!");
-            setSaveLoading(false);
-        }, 1500);
-    };
-
     return (
         <>
             {loading ? (
@@ -101,28 +83,6 @@ function DashboardFeaturedBook({
                                 <p className="text-gray-400 mb-4">
                                     {featuredBook.summary || "No summary available."}
                                 </p>
-
-                                <div className="flex gap-4 flex-wrap">
-                                    {(featuredBook.bookType === "both" || featuredBook.bookType === "physical") && (
-                                        <Button
-                                            onClick={handleBorrow}
-                                            disabled={featuredBook.available <= 0 || borrowLoading || !activeUser?.isVerified}
-                                            className={`font-semibold ${borrowLoading ? "bg-yellow-300 text-black" : "bg-[#f5c784] hover:bg-[#f1b65f] text-black"}`}
-                                        >
-                                            {borrowLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...</> : "📖 Borrow Book Request"}
-                                        </Button>
-                                    )}
-
-                                    {(featuredBook.bookType === "both" || featuredBook.bookType === "ebook") && (
-                                        <Button
-                                            onClick={handleSave}
-                                            disabled={saveLoading || !activeUser?.isVerified}
-                                            className={`font-semibold ${saveLoading ? "bg-blue-300 text-black" : "bg-blue-500 hover:bg-blue-600 text-white"}`}
-                                        >
-                                            {saveLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</> : "💾 Save Book"}
-                                        </Button>
-                                    )}
-                                </div>
                             </div>
 
                             <div className="group xs:ml-2 lg:ml-80 mb-8 relative w-[276px] h-[385px] mx-auto">
