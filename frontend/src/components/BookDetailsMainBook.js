@@ -245,7 +245,7 @@ function BookDetailsMainBook({ bookId }) {
 
     // Stable button styling function using useCallback
     const getButtonStyling = useCallback((variant, isLoading) => {
-        const baseClasses = "flex items-center gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 active:scale-95";
+        const baseClasses = "flex items-center gap-2 px-6 py-3 rounded-full font-semibold cursor-pointer transition-all duration-300 transform hover:scale-105 active:scale-95";
 
         if (isLoading) {
             return `${baseClasses} opacity-70 cursor-wait`;
@@ -376,7 +376,7 @@ function BookDetailsMainBook({ bookId }) {
                         {bookTypeChecks.hasPhysical && (
                             <Button
                                 onClick={handlePhysicalBookActionWithDelay}
-                                disabled={physicalButtonState.disabled || actionLoading}
+                                disabled={physicalButtonState.disabled || actionLoading || (activeUser.isVerified === false)}
                                 className={getButtonStyling(physicalButtonState.variant, actionLoading)}
                             >
                                 <physicalButtonState.icon className={`w-5 h-5 transition-transform duration-200 ${actionLoading ? 'animate-pulse' : ''}`} />
@@ -390,7 +390,7 @@ function BookDetailsMainBook({ bookId }) {
                             <>
                                 <Button
                                     onClick={handleEbookActionWithDelay}
-                                    disabled={actionLoading}
+                                    disabled={actionLoading || (activeUser.isVerified === false)}
                                     className={getButtonStyling(ebookButtonState.variant, actionLoading)}
                                 >
                                     <ebookButtonState.icon className={`w-5 h-5 transition-transform duration-200 ${actionLoading ? 'animate-pulse' : ''}`} />
@@ -401,7 +401,7 @@ function BookDetailsMainBook({ bookId }) {
 
                                 <Button
                                     onClick={handleReadBookWithDelay}
-                                    disabled={actionLoading}
+                                    disabled={actionLoading || (activeUser.isVerified === false)}
                                     className={getButtonStyling('read', actionLoading)}
                                 >
                                     <ExternalLink className={`w-5 h-5 transition-transform duration-200 ${actionLoading ? 'animate-pulse' : ''}`} />
