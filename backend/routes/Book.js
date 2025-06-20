@@ -819,17 +819,17 @@ router.put("/update/:id", upload.fields([
 );
 
 // ------------------ DELETE BOOK ------------------
-router.delete("/delete/:id", fetchUser, async (req, res) => {
+router.delete("/delete/:id", async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
-
+    console.log(book);
     if (!book) {
       return res.status(404).json({ success: false, error: "Book not found" });
     }
 
     // ✅ Prevent deletion if the book is currently borrowed
-    const currentlyBorrowed = book.borrowers.some(b => b.borrowed === true);
-    if (currentlyBorrowed) {
+    const isBorrowed = book.borrowers.some(b => b.borrowed === true);
+    if (isBorrowed) {
       return res.status(400).json({
         success: false,
         error: "Cannot delete book while it is borrowed by users",
@@ -847,26 +847,32 @@ router.delete("/delete/:id", fetchUser, async (req, res) => {
       await deleteFromCloudinary(book.videoCloudinary.public_id);
     }
 
+    // ✅ Remove this book from all users' savedBooks
+    await User.updateMany(
+      {},
+      { $pull: { savedBooks: { book: book._id } } }
+    );
+
     // ✅ Finally, delete the book from DB
     await book.deleteOne();
 
-    return res.json({ success: true, message: "Book deleted successfully" });
-
+    res.json({ success: true, message: "Book deleted successfully" });
   } catch (err) {
     console.error("Delete book error:", err);
     res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
 
+
 // ------------------ FORCE DELETE BOOK (Admin) ------------------
-router.delete("/forceDelete/:id", fetchUser, async (req, res) => {
+router.delete("/forceDelete/:id", async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
     if (!book) {
       return res.status(404).json({ success: false, error: "Book not found" });
     }
 
-    // ✅ Delete Cloudinary assets (if present)
+    // ✅ Delete Cloudinary assets
     if (book.pdfCloudinary?.public_id) {
       await deleteFromCloudinary(book.pdfCloudinary.public_id);
     }
@@ -877,14 +883,19 @@ router.delete("/forceDelete/:id", fetchUser, async (req, res) => {
       await deleteFromCloudinary(book.videoCloudinary.public_id);
     }
 
-    // ✅ Optionally: remove references from users who have this book in their borrowed list
-    // Only if needed:
-    // await User.updateMany(
-    //   { "books.book": book._id },
-    //   { $pull: { books: { book: book._id } } }
-    // );
+    // ✅ Remove from borrowedBooks, borrowHistory, savedBooks in all users
+    await User.updateMany(
+      {},
+      {
+        $pull: {
+          borrowedBooks: { book: book._id },
+          borrowHistory: { book: book._id },
+          savedBooks: { book: book._id },
+        },
+      }
+    );
 
-    // ✅ Delete the book record
+    // ✅ Delete the book
     await book.deleteOne();
 
     res.json({ success: true, message: "Book forcibly deleted" });
