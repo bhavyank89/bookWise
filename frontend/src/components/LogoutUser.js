@@ -10,7 +10,7 @@ function LogoutUser({ setIsLogin }) {
 
     const handleOnClick = () => {
         localStorage.removeItem('userToken');
-        sessionStorage.removeItem('hasSeenUnverifiedModal');
+        sessionStorage.removeItem('hasSeenUserUnverifiedModal');
         toast.success("successfully Logged out")
         setIsLogin(false);
         navigate('/');

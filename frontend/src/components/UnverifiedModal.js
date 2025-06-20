@@ -3,8 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import Lottie from 'lottie-react';
-import exploreAnimation from '@/assets/animations/explore.lottie.json'; // Adjust path as needed
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 
 const UnverifiedUserModal = ({ closeModal, isModalOpen, handleExplore }) => {
     return (
@@ -39,7 +38,11 @@ const UnverifiedUserModal = ({ closeModal, isModalOpen, handleExplore }) => {
 
                         {/* Animation */}
                         <div className="w-44 h-44 mx-auto mb-6">
-                            <Lottie animationData={exploreAnimation} loop autoplay />
+                            <DotLottieReact
+                                src="https://lottie.host/e98273f0-461f-4270-af22-8d49ddd0cebc/UebRFJIb7M.lottie"
+                                loop
+                                autoplay
+                            />
                         </div>
 
                         {/* Header */}
@@ -59,7 +62,7 @@ const UnverifiedUserModal = ({ closeModal, isModalOpen, handleExplore }) => {
                         <div className="flex justify-center mt-6">
                             <button
                                 onClick={handleExplore}
-                                className="relative group bg-gradient-to-r from-orange-400 to-pink-500 text-black px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-pink-300/40 transition-all duration-300"
+                                className="relative group bg-gradient-to-r from-orange-400 to-pink-500 text-black px-6 py-3 rounded-full font-semibold cursor-pointer shadow-lg hover:shadow-pink-300/40 transition-all duration-300"
                             >
                                 <span className="relative z-10">Let’s Explore</span>
                                 <span className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
