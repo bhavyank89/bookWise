@@ -175,7 +175,7 @@ function Signup() {
                                                 <FormLabel className="text-gray-300">Full Name</FormLabel>
                                                 <FormControl>
                                                     <Input
-                                                        placeholder="Adrian Hajdin"
+                                                        placeholder="John Jacob"
                                                         className="mt-1 bg-[#1e2230] border border-[#2c2f45] text-white placeholder:text-gray-500
                                                         focus:ring-orange-500 focus:border-orange-500"
                                                         {...field}
@@ -195,7 +195,7 @@ function Signup() {
                                                 <FormControl>
                                                     <Input
                                                         type="email"
-                                                        placeholder="adrian@jsmastery.pro"
+                                                        placeholder="example@gmail.com"
                                                         className="mt-1 bg-[#1e2230] border border-[#2c2f45] text-white placeholder:text-gray-500
                                                         focus:ring-orange-500 focus:border-orange-500"
                                                         {...field}
