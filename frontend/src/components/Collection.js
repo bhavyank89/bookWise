@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import CollectionRequestedBooks from './CollectionRequestedBooks';
 import CollectionBorrowHistory from './CollectionBorrowHistory';
 import CollectionSavedBooks from './CollectionSavedBooks';
+import CollectionBorrowedBook from './CollectionBorrowedBook';
 import toast from 'react-hot-toast';
 
 const fadeInUp = {
@@ -37,6 +38,7 @@ function Collection() {
 
             if (isMounted) {
                 setActiveUser(data);
+                console.log(data)
             }
         } catch (err) {
             console.error('Fetch error:', err);
@@ -76,6 +78,14 @@ function Collection() {
             <div className="max-w-7xl mx-auto flex flex-col gap-8 sm:gap-10 md:gap-12">
                 <motion.div custom={0} initial="hidden" animate="visible" variants={fadeInUp}>
                     <CollectionRequestedBooks
+                        activeUser={activeUser}
+                        borrowedBooks={activeUser.borrowedBooks || []}
+                        onDataRefresh={fetchUserCollectionData}
+                    />
+                </motion.div>
+
+                <motion.div custom={0} initial="hidden" animate="visible" variants={fadeInUp}>
+                    <CollectionBorrowedBook
                         activeUser={activeUser}
                         borrowedBooks={activeUser.borrowedBooks || []}
                         onDataRefresh={fetchUserCollectionData}

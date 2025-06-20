@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import BookCard from './BookCard';
-import Pagination from './Pagination';
+import Pagination from './CollectionPagination';
 import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
 import { motion, AnimatePresence } from 'framer-motion';

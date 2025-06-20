@@ -3,7 +3,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import BookCard from './BookCard';
-import Pagination from './Pagination';
+import Pagination from './CollectionPagination';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 

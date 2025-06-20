@@ -2,25 +2,23 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import dayjs from 'dayjs';
-import toast from 'react-hot-toast';
 import BookCard from './BookCard';
 import Pagination from './CollectionPagination';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
 
-const CollectionRequestedBooks = ({
+const BorrowedBooks = ({
     activeUser,
     borrowedBooks = [],
     onDataRefresh,
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(6);
-    const [withdrawingId, setWithdrawingId] = useState(null);
 
     const requestedBooks = useMemo(() => {
+        console.log(borrowedBooks);
         return Array.isArray(borrowedBooks)
             ? borrowedBooks.filter(
-                (b) => b && b.borrowed === false && b.returnedAt === null
+                (b) => b && b.borrowed === true && b.dueDate !== null
             )
             : [];
     }, [borrowedBooks]);
@@ -52,47 +50,6 @@ const CollectionRequestedBooks = ({
         }
     }, [totalPages, currentPage]);
 
-    const handleWithdraw = async (borrowId) => {
-        if (withdrawingId) return;
-
-        setWithdrawingId(borrowId);
-        let isMounted = true;
-
-        try {
-            const token = localStorage.getItem('userToken');
-            if (!token) throw new Error('No auth token found');
-
-            const res = await fetch(`http://localhost:4000/book/withdraw/${borrowId}`, {
-                method: 'PUT',
-                credentials: 'include',
-                headers: {
-                    'auth-token': token,
-                },
-            });
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}));
-                throw new Error(errorData.message || 'Failed to withdraw');
-            }
-            if (isMounted) {
-                toast.success('Request withdrawn successfully');
-                onDataRefresh?.();
-            }
-        } catch (error) {
-            console.error('Withdraw error:', error);
-            if (isMounted) {
-                toast.error(error.message || 'Withdraw failed');
-            }
-        } finally {
-            if (isMounted) {
-                setWithdrawingId(null);
-            }
-        }
-
-        return () => {
-            isMounted = false;
-        };
-    };
-
     return (
         <motion.div
             className="text-gray-100 p-3 sm:p-4 md:p-6 rounded-lg shadow-lg"
@@ -101,15 +58,15 @@ const CollectionRequestedBooks = ({
             transition={{ duration: 0.4 }}
         >
             <h2 className="text-xl sm:text-2xl font-bold text-green-400 tracking-wide mb-4">
-                📨 Requested Books
+                📕 Borrowed Books
             </h2>
 
             {requestedBooks.length === 0 ? (
                 <div className="text-center py-10">
                     <div className="text-5xl mb-4">📭</div>
-                    <p className="text-gray-400 italic text-lg">No requested books yet.</p>
+                    <p className="text-gray-400 italic text-lg">No Borrowed books yet.</p>
                     <p className="text-gray-500 text-sm mt-2">
-                        Books you request will appear here while pending approval.
+                        Books you borrowed will appear here.
                     </p>
                 </div>
             ) : (
@@ -153,25 +110,6 @@ const CollectionRequestedBooks = ({
                                                 </p>
                                             )}
                                         </div>
-
-                                        <button
-                                            onClick={() => handleWithdraw(bookId)}
-                                            disabled={withdrawingId === entry._id}
-                                            className={`w-full mt-3 py-2 px-3 rounded text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-in-out ${withdrawingId === entry._id
-                                                ? 'bg-gray-700 text-gray-400 cursor-wait'
-                                                : 'bg-red-600 text-white hover:bg-red-700 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer'
-                                                }`}
-                                        >
-                                            {withdrawingId === entry._id ? (
-                                                <>
-                                                    <Loader2 className="animate-spin w-4 h-4 mr-1" />
-                                                    Withdrawing...
-                                                </>
-                                            ) : (
-                                                'Withdraw Request'
-                                            )}
-                                        </button>
-
                                     </motion.div>
                                 );
                             })}
@@ -193,4 +131,4 @@ const CollectionRequestedBooks = ({
     );
 };
 
-export default CollectionRequestedBooks;
+export default BorrowedBooks;
