@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import ProfileEditModal from "./ProfileEditModal";
+import Cookies from "js-cookie";
 
 const Profile = () => {
     const [activeUser, setActiveUser] = useState(null);
@@ -26,7 +27,7 @@ const Profile = () => {
     const fetchUserCollectionData = useCallback(async () => {
         setLoading(true);
         try {
-            const token = localStorage.getItem("userToken");
+            const token = Cookies.get("userToken");
             if (!token) throw new Error("No token found");
 
             const res = await fetch(`${SERVER_URL}/user`, {
@@ -96,7 +97,7 @@ const Profile = () => {
             const res = await fetch(`${SERVER_URL}/auth/updateuser`, {
                 method: "POST",
                 headers: {
-                    "auth-token": localStorage.getItem("userToken"),
+                    "auth-token": Cookies.get("userToken"),
                 },
                 body: formData,
             });

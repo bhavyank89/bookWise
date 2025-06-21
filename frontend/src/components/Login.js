@@ -17,6 +17,7 @@ import {
     FormMessage,
 } from "../components/ui/form";
 import { Input } from "../components/ui/input";
+import Cookies from "js-cookie";
 
 const formSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
@@ -78,7 +79,7 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
-                    "auth-token": localStorage.getItem("userToken"),
+                    "auth-token": Cookies.get("userToken"),
                 },
             });
             const json = await res.json();
@@ -112,14 +113,14 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
 
             const json = await response.json();
             if (response.ok && json.success) {
-                localStorage.setItem("userToken", json.token);
+                Cookies.set("userToken", json.token,{ expires: 7 });
                 const user = await fetchUser();
                 if (user) {
                     toast.success("Login Successful");
                     navigate('/dashboard');
                 }
                 else {
-                    localStorage.removeItem('userToken')
+                    Cookies.remove('userToken')
                 };
             } else {
                 toast.error(json.error || "Login failed!");

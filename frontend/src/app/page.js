@@ -12,7 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import Login from "../components/Login";
-// import App from "../components/App";
+import App from "../components/App";
 import Signup from "../components/Signup";
 import Dashboard from "../components/Dashboard";
 import BookDetails from "../components/BookDetails";
@@ -22,6 +22,7 @@ import Profile from "../components/Profile";
 import Navbar from "../components/Navbar";
 import Landing from "../components/Landing";
 import Collection from "../components/Collection";
+import Cookies from "js-cookie";
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -85,7 +86,8 @@ function AuthProvider({ children }) {
 
   const fetchUser = async () => {
     try {
-      const userToken = localStorage.getItem("userToken");
+      // const userToken = localStorage.getItem("userToken");
+      const userToken = Cookies.get("userToken");
 
       if (!userToken) {
         console.warn("No token found");
@@ -116,10 +118,10 @@ function AuthProvider({ children }) {
         setActiveUser(null);
 
         // Clear invalid localStorage data
-        localStorage.removeItem("activeUser");
-        localStorage.removeItem("isLogin");
-        localStorage.removeItem("token");
-        localStorage.removeItem("userToken");
+        Cookies.remove("activeUser");
+        Cookies.remove("isLogin");
+        Cookies.remove("token");
+        Cookies.remove("userToken");
 
         return { success: false, error: json?.error || "Failed to fetch user" };
       }
@@ -134,27 +136,27 @@ function AuthProvider({ children }) {
   const logout = () => {
     setIsLogin(false);
     setActiveUser(null);
-    localStorage.removeItem("activeUser");
-    localStorage.removeItem("isLogin");
-    localStorage.removeItem("token");
-    localStorage.removeItem("userToken");
+    Cookies.remove("activeUser");
+    Cookies.remove("isLogin");
+    Cookies.remove("token");
+    Cookies.remove("userToken");
   };
 
   const login = (userData, token) => {
     setActiveUser(userData);
     setIsLogin(true);
-    localStorage.setItem("userToken", token);
-    localStorage.setItem("activeUser", JSON.stringify(userData));
-    localStorage.setItem("isLogin", "true");
+    Cookies.set("userToken", token,{ expires: 7 });
+    Cookies.set("activeUser", JSON.stringify(userData),{ expires: 7 });
+    Cookies.set("isLogin", "true",{ expires: 7 });
   };
 
   useEffect(() => {
     const initAuth = async () => {
       try {
         // Check if user data exists in localStorage
-        const storedUser = localStorage.getItem("activeUser");
-        const storedLoginStatus = localStorage.getItem("isLogin");
-        const token = localStorage.getItem("userToken");
+        const storedUser = Cookies.get("activeUser");
+        const storedLoginStatus = Cookies.get("isLogin");
+        const token = Cookies.get("userToken");
 
         if (storedUser && storedLoginStatus === "true" && token) {
           // Try to restore from localStorage first
@@ -367,7 +369,7 @@ function MainApp() {
               </ProtectedRoute>
             }
           />
-          <Route
+          {/* <Route
             path="/uploadPDF"
             element={
               <ProtectedRoute>
@@ -376,7 +378,7 @@ function MainApp() {
                 </MotionWrapper>
               </ProtectedRoute>
             }
-          />
+          /> */}
 
           {/* Legacy route - can be removed */}
           <Route

@@ -41,5 +41,4 @@ yarn-error.log*
 next-env.d.ts
 
 # files
-/src/components/App.js
 /src/components/UploadPDF.js

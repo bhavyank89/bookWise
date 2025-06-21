@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import PopularBooks from "./PopularBooks";
 import DashboardFeaturedBook from "./DashboardFeaturedBook";
 import UnverifiedUserModal from "./UnverifiedModal";
+import Cookies from "js-cookie";
 
 const Dashboard = ({ activeUser, isLogin }) => {
     const [books, setBooks] = useState([]);
@@ -50,10 +51,10 @@ const Dashboard = ({ activeUser, isLogin }) => {
 
     // Show Unverified Modal once per session
     useEffect(() => {
-        const hasSeenModal = sessionStorage.getItem('hasSeenUserUnverifiedModal');
+        const hasSeenModal = Cookies.get('hasSeenUserUnverifiedModal');
         if (!activeUser?.isVerified && !hasSeenModal) {
             setIsModalOpen(true);
-            sessionStorage.setItem('hasSeenUserUnverifiedModal', 'true');
+            Cookies.set('hasSeenUserUnverifiedModal', 'true', { expires: 7 });
         }
     }, [activeUser]);
 

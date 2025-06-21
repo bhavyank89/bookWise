@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../path/to/your/main/component'; // Adjust the import path
 
+import Cookies from 'js-cookie';
+
 function App({ activeUser, setActiveUser, setIsLogin }) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -10,7 +12,8 @@ function App({ activeUser, setActiveUser, setIsLogin }) {
     const handleUserAuthentication = async () => {
         try {
             // Check for token first
-            const userToken = localStorage.getItem("userToken");
+            // const userToken = localStorage.getItem("userToken");
+            const userToken = Cookies.get("userToken");
             const token = userToken;
 
             if (!token) {

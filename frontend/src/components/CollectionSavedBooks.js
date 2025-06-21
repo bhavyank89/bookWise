@@ -6,6 +6,7 @@ import BookCard from './BookCard';
 import Pagination from './CollectionPagination';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 const CollectionSavedBooks = ({
     savedBooks = [],
@@ -59,7 +60,7 @@ const CollectionSavedBooks = ({
                 method: 'DELETE',
                 credentials: 'include',
                 headers: {
-                    'auth-token': localStorage.getItem('userToken'),
+                    'auth-token': Cookies.get('userToken'),
                 },
             });
 

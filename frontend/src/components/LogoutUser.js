@@ -4,13 +4,14 @@ import React from 'react';
 import { LogOut } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "react-hot-toast";
+import Cookies from 'js-cookie';
 
 function LogoutUser({ setIsLogin }) {
     const navigate = useNavigate();
 
     const handleOnClick = () => {
-        localStorage.removeItem('userToken');
-        sessionStorage.removeItem('hasSeenUserUnverifiedModal');
+        Cookies.remove('userToken');
+        Cookies.remove('hasSeenUserUnverifiedModal');
         toast.success("successfully Logged out")
         setIsLogin(false);
         navigate('/');

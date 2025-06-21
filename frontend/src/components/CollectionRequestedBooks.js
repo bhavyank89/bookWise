@@ -7,6 +7,7 @@ import BookCard from './BookCard';
 import Pagination from './CollectionPagination';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 const CollectionRequestedBooks = ({
     activeUser,
@@ -61,7 +62,7 @@ const CollectionRequestedBooks = ({
         let isMounted = true;
 
         try {
-            const token = localStorage.getItem('userToken');
+            const token = Cookies.get('userToken');
             if (!token) throw new Error('No auth token found');
 
             const res = await fetch(`${SERVER_URL}/book/withdraw/${borrowId}`, {

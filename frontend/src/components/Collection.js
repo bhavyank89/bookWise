@@ -7,6 +7,7 @@ import CollectionBorrowHistory from './CollectionBorrowHistory';
 import CollectionSavedBooks from './CollectionSavedBooks';
 import CollectionBorrowedBook from './CollectionBorrowedBook';
 import toast from 'react-hot-toast';
+import Cookies from 'js-cookie';
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
@@ -34,7 +35,7 @@ function Collection() {
 
     const fetchUserCollectionData = useCallback(async () => {
         try {
-            const token = localStorage.getItem('userToken');
+            const token = Cookies.get('userToken');
             if (!token) throw new Error('No token found');
 
             const res = await fetch(`${SERVER_URL}/user`, {

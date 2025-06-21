@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import dayjs from 'dayjs';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 const CollectionBorrowHistory = ({
   books = [],
@@ -66,7 +67,7 @@ const CollectionBorrowHistory = ({
         method: 'PUT',
         credentials: 'include',
         headers: {
-          'auth-token': localStorage.getItem('userToken'),
+          'auth-token': Cookies.get('userToken'),
         },
       });
 

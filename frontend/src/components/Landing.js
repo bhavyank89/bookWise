@@ -6,6 +6,7 @@ import LandingServiceSection from './LandingServiceSection';
 import LandingStatsSection from './LandingStatsSection';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 const fadeVariant = {
     hidden: { opacity: 0 },
@@ -31,7 +32,7 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
 
     const fetchUser = async (role) => {
         try {
-            const token = localStorage.getItem(role === "user" ? "userToken" : "adminToken");
+            const token = Cookies.get(role === "user" ? "userToken" : "adminToken");
 
             const res = await fetch(`${SERVER_URL}/user`, {
                 method: "GET",
@@ -60,7 +61,7 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
 
         const role = selectedRole.toLowerCase();
         const tokenKey = role === "user" ? "userToken" : "adminToken";
-        const token = localStorage.getItem(tokenKey);
+        const token = Cookies.get(tokenKey);
         if (!token) {
             console.warn("No token found for role:", role);
             role === "user" ? navigate("/login") : navigate("/adminLogin");

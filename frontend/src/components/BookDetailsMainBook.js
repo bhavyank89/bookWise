@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "../components/ui/button";
 import { BookOpen, Bookmark, BookmarkCheck, X, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
 function BookDetailsMainBook({ bookId }) {
     const [book, setBook] = useState({});
@@ -10,7 +11,7 @@ function BookDetailsMainBook({ bookId }) {
     const [actionLoading, setActionLoading] = useState(false);
 
     // Memoize token to prevent unnecessary re-fetches
-    const token = useMemo(() => localStorage.getItem("userToken"), []);
+    const token = useMemo(() => Cookies.get("userToken"), []);
 
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
