@@ -27,10 +27,10 @@ const BorrowedBooks = ({
         const handleResize = () => {
             const width = window.innerWidth;
             if (width < 640) setItemsPerPage(3);
-            else if (width < 768) setItemsPerPage(4);
-            else if (width < 1024) setItemsPerPage(6);
-            else if (width < 1280) setItemsPerPage(8);
-            else setItemsPerPage(9);
+            else if (width < 768) setItemsPerPage(3);
+            else if (width < 1024) setItemsPerPage(3);
+            else if (width < 1280) setItemsPerPage(3);
+            else setItemsPerPage(3);
         };
 
         handleResize();

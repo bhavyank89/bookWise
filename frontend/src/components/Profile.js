@@ -21,13 +21,15 @@ const Profile = () => {
         uniIdFile: null,
     });
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     const fetchUserCollectionData = useCallback(async () => {
         setLoading(true);
         try {
             const token = localStorage.getItem("userToken");
             if (!token) throw new Error("No token found");
 
-            const res = await fetch("http://localhost:4000/user", {
+            const res = await fetch(`${SERVER_URL}/user`, {
                 method: "GET",
                 credentials: "include",
                 headers: { "auth-token": token },
@@ -91,7 +93,7 @@ const Profile = () => {
         if (userData.uniIdFile) formData.append("uniIdFile", userData.uniIdFile);
 
         try {
-            const res = await fetch("http://localhost:4000/auth/updateuser", {
+            const res = await fetch(`${SERVER_URL}/auth/updateuser`, {
                 method: "POST",
                 headers: {
                     "auth-token": localStorage.getItem("userToken"),

@@ -39,6 +39,9 @@ function Signup() {
     const handleUniversityIDChange = (e) => setUniversityIDFile(e.target.files[0]);
     const handleLoginClick = () => navigate("/login");
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const MAIN_URL = process.env.REACT_APP_MAIN_URL;
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -96,7 +99,7 @@ function Signup() {
 
         try {
             setIsSubmitting(true);
-            const response = await fetch("http://localhost:4000/auth/createUser", {
+            const response = await fetch(`${SERVER_URL}/auth/createUser`, {
                 method: "POST",
                 body: formData,
             });

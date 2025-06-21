@@ -9,10 +9,12 @@ function BookDetailsPopularBooks({ bookId }) {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     // Fetch current book data
     const fetchCurrentBook = useCallback(async (id) => {
         try {
-            const response = await fetch(`http://localhost:4000/book/fetch/${id}`, {
+            const response = await fetch(`${SERVER_URL}/book/fetch/${id}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -27,7 +29,7 @@ function BookDetailsPopularBooks({ bookId }) {
     // Fetch all books
     const fetchAllBooks = useCallback(async () => {
         try {
-            const response = await fetch("http://localhost:4000/book/fetchall", {
+            const response = await fetch(`${SERVER_URL}/book/fetchall`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });

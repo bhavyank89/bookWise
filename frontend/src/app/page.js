@@ -82,6 +82,8 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
+  const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
   const fetchUser = async () => {
     try {
       const userToken = localStorage.getItem("userToken");
@@ -93,7 +95,7 @@ function AuthProvider({ children }) {
         return { success: false, error: "No token found" };
       }
 
-      const res = await fetch("http://localhost:4000/user", {
+      const res = await fetch(`${SERVER_URL}/user`, {
         method: "GET",
         credentials: "include",
         headers: {

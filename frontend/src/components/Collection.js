@@ -22,12 +22,14 @@ function Collection() {
     const [loading, setLoading] = useState(true);
     const [isMounted, setIsMounted] = useState(true); // mount tracking without useRef
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     const fetchUserCollectionData = useCallback(async () => {
         try {
             const token = localStorage.getItem('userToken');
             if (!token) throw new Error('No token found');
 
-            const res = await fetch('http://localhost:4000/user', {
+            const res = await fetch(`${SERVER_URL}/user`, {
                 method: 'GET',
                 credentials: 'include',
                 headers: { 'auth-token': token },

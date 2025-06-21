@@ -12,10 +12,12 @@ function BookDetailsMainBook({ bookId }) {
     // Memoize token to prevent unnecessary re-fetches
     const token = useMemo(() => localStorage.getItem("userToken"), []);
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     // Fetch book data
     const fetchBookData = useCallback(async (id) => {
         try {
-            const response = await fetch(`http://localhost:4000/book/fetch/${id}`, {
+            const response = await fetch(`${SERVER_URL}/book/fetch/${id}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -42,7 +44,7 @@ function BookDetailsMainBook({ bookId }) {
                     return;
                 }
 
-                const res = await fetch("http://localhost:4000/user", {
+                const res = await fetch(`${SERVER_URL}/user`, {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
@@ -151,12 +153,12 @@ function BookDetailsMainBook({ bookId }) {
 
             if (isRequested) {
                 // Withdraw request
-                url = `http://localhost:4000/book/withdraw/${bookIdValue}`;
+                url = `${SERVER_URL}/book/withdraw/${bookIdValue}`;
                 method = "PUT";
                 successMessage = "Request withdrawn successfully!";
             } else {
                 // Make request
-                url = `http://localhost:4000/book/request/${bookIdValue}`;
+                url = `${SERVER_URL}/book/request/${bookIdValue}`;
                 method = "PUT";
                 successMessage = "Book requested successfully!";
             }
@@ -201,12 +203,12 @@ function BookDetailsMainBook({ bookId }) {
 
             if (isSaved) {
                 // Unsave book
-                url = `http://localhost:4000/user/unsavebook/${bookIdValue}`;
+                url = `${SERVER_URL}/user/unsavebook/${bookIdValue}`;
                 method = "DELETE";
                 successMessage = "Book removed from saved list!";
             } else {
                 // Save book
-                url = `http://localhost:4000/user/savebook/${bookIdValue}`;
+                url = `${SERVER_URL}/user/savebook/${bookIdValue}`;
                 method = "POST";
                 successMessage = "Book saved successfully!";
             }

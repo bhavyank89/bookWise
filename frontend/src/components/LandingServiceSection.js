@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import {
-    Menu, X, Monitor, Truck, Shield, BookOpen, ArrowRight, Search,
-    Upload, Bell, UserCheck, Database, Zap, Github, Instagram, Linkedin,
-    User, UserCog
+    Monitor, Shield, BookOpen, Search,
+    Upload, Bell, UserCheck, Database, Zap
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 function LandingServiceSection() {
     const services = [

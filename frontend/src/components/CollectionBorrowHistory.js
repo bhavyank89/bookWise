@@ -16,16 +16,18 @@ const CollectionBorrowHistory = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loadingRequestId, setLoadingRequestId] = useState(null);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
+  const [itemsPerPage, setItemsPerPage] = useState(3);
+
+  const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
   useEffect(() => {
     const handleResize = () => {
       const width = window.innerWidth;
       if (width < 640) setItemsPerPage(3);
-      else if (width < 768) setItemsPerPage(4);
-      else if (width < 1024) setItemsPerPage(6);
-      else if (width < 1280) setItemsPerPage(8);
-      else setItemsPerPage(9);
+      else if (width < 768) setItemsPerPage(3);
+      else if (width < 1024) setItemsPerPage(3);
+      else if (width < 1280) setItemsPerPage(3);
+      else setItemsPerPage(3);
     };
 
     handleResize();
@@ -60,7 +62,7 @@ const CollectionBorrowHistory = ({
     let isMounted = true;
 
     try {
-      const res = await fetch(`http://localhost:4000/book/request/${bookId}`, {
+      const res = await fetch(`${SERVER_URL}/book/request/${bookId}`, {
         method: 'PUT',
         credentials: 'include',
         headers: {
@@ -156,10 +158,10 @@ const CollectionBorrowHistory = ({
                       onClick={() => handleRequestAgain(bookId)}
                       disabled={alreadyRequested || loadingRequestId === bookId}
                       className={`w-full mt-4 py-2 px-3 rounded text-xs font-semibold flex items-center justify-center transition-all duration-300 ease-in-out ${alreadyRequested
-                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                          : loadingRequestId === bookId
-                            ? 'bg-gray-700 text-gray-400 cursor-wait'
-                            : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer'
+                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : loadingRequestId === bookId
+                          ? 'bg-gray-700 text-gray-400 cursor-wait'
+                          : 'bg-blue-600 text-white hover:bg-blue-700 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] cursor-pointer'
                         }`}
                     >
                       {loadingRequestId === bookId ? (

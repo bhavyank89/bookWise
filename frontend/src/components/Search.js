@@ -17,11 +17,13 @@ const SearchPage = () => {
     const itemsPerPage = 12;
     const navigate = useNavigate();
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     useEffect(() => {
         const fetchBooks = async () => {
             setLoading(true);
             try {
-                const response = await fetch("http://localhost:4000/book/fetchall");
+                const response = await fetch(`${SERVER_URL}/book/fetchall`);
                 const data = await response.json();
                 setBooks(data.books || []);
             } catch (error) {

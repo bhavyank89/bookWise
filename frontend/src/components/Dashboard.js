@@ -14,13 +14,15 @@ const Dashboard = ({ activeUser, isLogin }) => {
     const [featuredBook, setFeaturedBook] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     const navigate = useNavigate();
 
     // Fetch all books on mount
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await fetch("http://localhost:4000/book/fetchall");
+                const response = await fetch(`${SERVER_URL}/book/fetchall`);
                 const json = await response.json();
                 const allBooks = json.books || [];
 

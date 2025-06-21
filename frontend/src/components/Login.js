@@ -28,6 +28,8 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -72,7 +74,7 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
 
     const fetchUser = async () => {
         try {
-            const res = await fetch("http://localhost:4000/user", {
+            const res = await fetch(`${SERVER_URL}/user`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -96,7 +98,7 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
         setIsLoading(true);
 
         try {
-            const response = await fetch("http://localhost:4000/auth/login", {
+            const response = await fetch(`${SERVER_URL}/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

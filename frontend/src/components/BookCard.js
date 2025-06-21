@@ -5,10 +5,12 @@ const BookCard = ({ bookId, status }) => {
     const [book, setBook] = useState(null);
     const navigate = useNavigate();
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+
     useEffect(() => {
         const fetchBook = async () => {
             try {
-                const res = await fetch(`http://localhost:4000/book/fetch/${bookId}`);
+                const res = await fetch(`${SERVER_URL}/book/fetch/${bookId}`);
                 if (!res.ok) throw new Error('Network response was not ok');
                 const data = await res.json();
                 setBook(data.book);

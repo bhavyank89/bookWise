@@ -14,8 +14,10 @@ const CollectionRequestedBooks = ({
     onDataRefresh,
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(6);
+    const [itemsPerPage, setItemsPerPage] = useState(3);
     const [withdrawingId, setWithdrawingId] = useState(null);
+
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
     const requestedBooks = useMemo(() => {
         return Array.isArray(borrowedBooks)
@@ -29,10 +31,10 @@ const CollectionRequestedBooks = ({
         const handleResize = () => {
             const width = window.innerWidth;
             if (width < 640) setItemsPerPage(3);
-            else if (width < 768) setItemsPerPage(4);
-            else if (width < 1024) setItemsPerPage(6);
-            else if (width < 1280) setItemsPerPage(8);
-            else setItemsPerPage(9);
+            else if (width < 768) setItemsPerPage(3);
+            else if (width < 1024) setItemsPerPage(3);
+            else if (width < 1280) setItemsPerPage(3);
+            else setItemsPerPage(3);
         };
 
         handleResize();
@@ -62,7 +64,7 @@ const CollectionRequestedBooks = ({
             const token = localStorage.getItem('userToken');
             if (!token) throw new Error('No auth token found');
 
-            const res = await fetch(`http://localhost:4000/book/withdraw/${borrowId}`, {
+            const res = await fetch(`${SERVER_URL}/book/withdraw/${borrowId}`, {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {

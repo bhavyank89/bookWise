@@ -20,6 +20,9 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
 
     const navigate = useNavigate();
 
+    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const ADMIN_URL = process.env.REACT_APP_ADMIN_URL;
+
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => {
         setIsModalOpen(false);
@@ -30,7 +33,7 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
         try {
             const token = localStorage.getItem(role === "user" ? "userToken" : "adminToken");
 
-            const res = await fetch("http://localhost:4000/user", {
+            const res = await fetch(`${SERVER_URL}/user`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -72,7 +75,7 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
                 setActiveUser(user);
                 navigate("/dashboard");
             } else {
-                window.location.href = 'http://localhost:3001';
+                window.location.href = `${ADMIN_URL}`;
             }
         } else {
             setIsLogin(false);

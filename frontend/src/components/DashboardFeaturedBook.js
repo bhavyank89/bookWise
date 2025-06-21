@@ -1,8 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
 
 function DashboardFeaturedBook({
     loading,
