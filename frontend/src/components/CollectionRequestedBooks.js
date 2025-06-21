@@ -17,7 +17,7 @@ const CollectionRequestedBooks = ({
     const [itemsPerPage, setItemsPerPage] = useState(3);
     const [withdrawingId, setWithdrawingId] = useState(null);
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     const requestedBooks = useMemo(() => {
         return Array.isArray(borrowedBooks)

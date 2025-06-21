@@ -18,7 +18,7 @@ const CollectionBorrowHistory = ({
   const [loadingRequestId, setLoadingRequestId] = useState(null);
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
-  const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
   useEffect(() => {
     const handleResize = () => {

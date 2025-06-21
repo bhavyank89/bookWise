@@ -14,7 +14,7 @@ const Dashboard = ({ activeUser, isLogin }) => {
     const [featuredBook, setFeaturedBook] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     const navigate = useNavigate();
 

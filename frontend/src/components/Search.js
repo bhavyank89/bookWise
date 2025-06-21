@@ -17,7 +17,7 @@ const SearchPage = () => {
     const itemsPerPage = 12;
     const navigate = useNavigate();
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     useEffect(() => {
         const fetchBooks = async () => {

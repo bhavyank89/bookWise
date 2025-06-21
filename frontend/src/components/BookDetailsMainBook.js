@@ -12,7 +12,7 @@ function BookDetailsMainBook({ bookId }) {
     // Memoize token to prevent unnecessary re-fetches
     const token = useMemo(() => localStorage.getItem("userToken"), []);
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     // Fetch book data
     const fetchBookData = useCallback(async (id) => {

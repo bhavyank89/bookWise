@@ -22,7 +22,7 @@ function Collection() {
     const [loading, setLoading] = useState(true);
     const [isMounted, setIsMounted] = useState(true); // mount tracking without useRef
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     const fetchUserCollectionData = useCallback(async () => {
         try {

@@ -16,7 +16,7 @@ const CollectionSavedBooks = ({
     const [itemsPerPage, setItemsPerPage] = useState(3);
     const [unsavingId, setUnsavingId] = useState(null);
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     // Responsive itemsPerPage
     useEffect(() => {

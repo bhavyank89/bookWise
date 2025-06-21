@@ -28,7 +28,7 @@ function Login({ setIsLogin = () => { }, setActiveUser }) {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     const form = useForm({
         resolver: zodResolver(formSchema),

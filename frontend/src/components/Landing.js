@@ -20,8 +20,8 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
 
     const navigate = useNavigate();
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
-    const ADMIN_URL = process.env.REACT_APP_ADMIN_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+    const ADMIN_URL = process.env.NEXT_PUBLIC_ADMIN_URL;
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => {

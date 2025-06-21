@@ -39,8 +39,8 @@ function Signup() {
     const handleUniversityIDChange = (e) => setUniversityIDFile(e.target.files[0]);
     const handleLoginClick = () => navigate("/login");
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
-    const MAIN_URL = process.env.REACT_APP_MAIN_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
+    const MAIN_URL = process.env.NEXT_PUBLIC_MAIN_URL;
 
     const form = useForm({
         resolver: zodResolver(formSchema),

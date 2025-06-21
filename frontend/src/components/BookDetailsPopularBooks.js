@@ -9,7 +9,7 @@ function BookDetailsPopularBooks({ bookId }) {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     // Fetch current book data
     const fetchCurrentBook = useCallback(async (id) => {

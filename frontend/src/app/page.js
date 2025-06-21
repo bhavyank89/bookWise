@@ -82,7 +82,7 @@ function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [initialized, setInitialized] = useState(false);
 
-  const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+  const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
   const fetchUser = async () => {
     try {

@@ -5,7 +5,7 @@ const BookCard = ({ bookId, status }) => {
     const [book, setBook] = useState(null);
     const navigate = useNavigate();
 
-    const SERVER_URL = process.env.REACT_APP_SERVER_URL;
+    const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
 
     useEffect(() => {
         const fetchBook = async () => {
