@@ -238,14 +238,6 @@ function BookDetailsMainBook({ bookId }) {
         }
     }, [book._id, book.savedBy, activeUser._id, token, refreshBookData]);
 
-    const handleReadBook = useCallback(() => {
-        if (book?.pdfCloudinary?.secure_url) {
-            window.open(book.pdfCloudinary.secure_url, '_blank');
-        } else {
-            toast.error("PDF not available");
-        }
-    }, [book?.pdfCloudinary?.secure_url]);
-
     // Stable button styling function using useCallback
     const getButtonStyling = useCallback((variant, isLoading) => {
         const baseClasses = "flex items-center gap-2 px-6 py-3 rounded-full font-semibold cursor-pointer transition-all duration-300 transform hover:scale-105 active:scale-95";
@@ -402,16 +394,31 @@ function BookDetailsMainBook({ bookId }) {
                                     </span>
                                 </Button>
 
-                                <Button
-                                    onClick={handleReadBookWithDelay}
-                                    disabled={actionLoading || (activeUser.isVerified === false)}
-                                    className={getButtonStyling('read', actionLoading)}
-                                >
-                                    <ExternalLink className={`w-5 h-5 transition-transform duration-200 ${actionLoading ? 'animate-pulse' : ''}`} />
-                                    <span className="transition-opacity duration-200">
-                                        {actionLoading ? "Loading..." : "Read Book"}
-                                    </span>
-                                </Button>
+                                {book?.pdfCloudinary?.secure_url ? (
+                                    <a
+                                        href={book.pdfCloudinary.secure_url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={getButtonStyling('read', actionLoading)}
+                                        aria-disabled={actionLoading || (activeUser.isVerified === false)}
+                                    >
+                                        <ExternalLink
+                                            className={`w-5 h-5 transition-transform duration-200 ${actionLoading ? 'animate-pulse' : ''
+                                                }`}
+                                        />
+                                        <span className="transition-opacity duration-200">
+                                            {actionLoading ? 'Loading...' : 'Read Book'}
+                                        </span>
+                                    </a>
+                                ) : (
+                                    <Button
+                                        disabled
+                                        className={getButtonStyling('read', true)}
+                                    >
+                                        <ExternalLink className="w-5 h-5 opacity-50" />
+                                        <span className="opacity-50">PDF Not Available</span>
+                                    </Button>
+                                )}
                             </>
                         )}
                     </div>

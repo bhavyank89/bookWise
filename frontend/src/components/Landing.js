@@ -76,7 +76,7 @@ const CombinedLandingPage = ({ setIsLogin, setActiveUser }) => {
                 setActiveUser(user);
                 navigate("/dashboard");
             } else {
-                window.location.href = `${ADMIN_URL}`;
+                navigate(`${ADMIN_URL}`);
             }
         } else {
             setIsLogin(false);

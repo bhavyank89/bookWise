@@ -12,7 +12,7 @@ const BorrowedBooks = ({
     onDataRefresh,
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(6);
+    const [itemsPerPage, setItemsPerPage] = useState(4);
 
     const requestedBooks = useMemo(() => {
         console.log(borrowedBooks);
@@ -22,21 +22,6 @@ const BorrowedBooks = ({
             )
             : [];
     }, [borrowedBooks]);
-
-    useEffect(() => {
-        const handleResize = () => {
-            const width = window.innerWidth;
-            if (width < 640) setItemsPerPage(3);
-            else if (width < 768) setItemsPerPage(3);
-            else if (width < 1024) setItemsPerPage(3);
-            else if (width < 1280) setItemsPerPage(3);
-            else setItemsPerPage(4);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     const totalPages = Math.ceil(requestedBooks.length / itemsPerPage);
     const paginatedBooks = useMemo(() => {

@@ -14,26 +14,10 @@ const CollectionSavedBooks = ({
     onDataRefresh,
 }) => {
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(3);
+    const [itemsPerPage, setItemsPerPage] = useState(4);
     const [unsavingId, setUnsavingId] = useState(null);
 
     const SERVER_URL = process.env.NEXT_PUBLIC_SERVER_URL;
-
-    // Responsive itemsPerPage
-    useEffect(() => {
-        const handleResize = () => {
-            const width = window.innerWidth;
-            if (width < 640) setItemsPerPage(3);
-            else if (width < 768) setItemsPerPage(4);
-            else if (width < 1024) setItemsPerPage(4);
-            else if (width < 1280) setItemsPerPage(4);
-            else setItemsPerPage(4);
-        };
-
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
 
     // Pagination calculations
     const totalPages = Math.ceil(savedBooks.length / itemsPerPage);
