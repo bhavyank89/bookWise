@@ -34,7 +34,7 @@ const CollectionRequestedBooks = ({
             else if (width < 768) setItemsPerPage(3);
             else if (width < 1024) setItemsPerPage(3);
             else if (width < 1280) setItemsPerPage(3);
-            else setItemsPerPage(3);
+            else setItemsPerPage(4);
         };
 
         handleResize();
