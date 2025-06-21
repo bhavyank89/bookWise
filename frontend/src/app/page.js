@@ -12,13 +12,13 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import Login from "../components/Login";
-import App from "../components/App";
+// import App from "../components/App";
 import Signup from "../components/Signup";
 import Dashboard from "../components/Dashboard";
 import BookDetails from "../components/BookDetails";
 import SearchPage from "../components/Search";
 import Profile from "../components/Profile";
-import UploadPDF from "../components/UploadPDF";
+// import UploadPDF from "../components/UploadPDF";
 import Navbar from "../components/Navbar";
 import Landing from "../components/Landing";
 import Collection from "../components/Collection";
