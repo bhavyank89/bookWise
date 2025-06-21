@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import { BookOpen, Bookmark, BookmarkCheck, X, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 

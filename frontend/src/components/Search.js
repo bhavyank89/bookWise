@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 import { Search, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Skeleton from "react-loading-skeleton";
 import { motion } from "framer-motion";
-import Pagination from "@/components/Pagination";
+import Pagination from "./Pagination";
 
 const SearchPage = () => {
     const [searchTerm, setSearchTerm] = useState("");

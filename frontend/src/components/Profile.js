@@ -4,7 +4,7 @@ import { BadgeCheck, Pencil } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import ProfileEditModal from "@/components/ProfileEditModal";
+import ProfileEditModal from "./ProfileEditModal";
 
 const Profile = () => {
     const [activeUser, setActiveUser] = useState(null);

@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
 import { BookOpen } from "lucide-react";
 import { Eye, EyeOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
     Form,
     FormControl,
@@ -15,8 +15,8 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+} from "../components/ui/form";
+import { Input } from "../components/ui/input";
 
 const formSchema = z.object({
     email: z.string().email({ message: "Invalid email address" }),
