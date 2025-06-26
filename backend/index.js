@@ -18,24 +18,27 @@ const PORT = process.env.SERVER_PORT || 4000;
 connectToMongoose();
 
 // CORS Setup
-const ADMIN_URL = process.env.ADMIN_URL || 'https://bookwise-admin.vercel.app';
+const ADMIN_URL = process.env.ADMIN_URL;
 const MAIN_URL = process.env.MAIN_URL || 'https://bookwise-main.vercel.app';
 
-const allowedOrigins = [ADMIN_URL, MAIN_URL];
+// ✅ Fix: Build a dynamic origin validator
+const allowedOrigins = [ADMIN_URL, MAIN_URL].filter(Boolean);
 
-console.log('✅ Allowed Origins:', allowedOrigins);
-
-app.use(cors({
+const corsOptions = {
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
-            console.warn('❌ Blocked CORS origin:', origin);
+            console.warn(`❌ CORS blocked for origin: ${origin}`);
             callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
-}));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'auth-token'],
+};
+
+app.use(cors(corsOptions));
 
 // Middleware
 app.use(express.json());
