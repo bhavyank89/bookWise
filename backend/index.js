@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import connectToMongoose from './db/db.js';
 import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 // Route Imports
 import homeRoutes from './routes/Home.js';
@@ -23,6 +26,9 @@ const allowedOrigins = [
     `${ADMIN_URL}`,
     `${MAIN_URL}`,
 ];
+
+console.log("Main URL : ", MAIN_URL);
+console.log("Admin URL : ", ADMIN_URL);
 
 app.use(cors({
     origin: function (origin, callback) {
