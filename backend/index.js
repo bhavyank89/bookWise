@@ -19,7 +19,7 @@ const PORT = process.env.SERVER_PORT || 4000;
 connectToMongoose();
 
 const ADMIN_URL = process.env.ADMIN_URL;
-const MAIN_URL = process.env.MAIN_URL;
+const MAIN_URL = process.env.MAIN_URL || "https://bookwise-main.vercel.app";
 
 // Middleware
 const allowedOrigins = [
