@@ -8,15 +8,21 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Set up multer storage to use memory storage
+// Memory storage for in-memory buffer uploads (Vercel-safe)
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Cloudinary upload function
+// Cloudinary upload function with dynamic resource type
 const uploadToCloudinary = (file) => {
     return new Promise((resolve, reject) => {
+        const mimetype = file.mimetype || '';
+        let resource_type = 'raw';
+
+        if (mimetype.startsWith('image/')) resource_type = 'image';
+        else if (mimetype.startsWith('video/')) resource_type = 'video';
+
         const stream = cloudinary.uploader.upload_stream(
-            { resource_type: 'image' },
+            { resource_type },
             (error, result) => {
                 if (error) {
                     reject({ message: 'Error uploading to Cloudinary', error });
@@ -25,31 +31,33 @@ const uploadToCloudinary = (file) => {
                 }
             }
         );
-        stream.end(file.buffer); // End the stream after file buffer is passed
+
+        stream.end(file.buffer);
     });
 };
 
-// Middleware for handling file uploads and Cloudinary upload
-const uploadAndCloudinary = upload.fields([{ name: 'avatar' }, { name: 'uniIdFile' }]);
+// Multer middleware for handling fields
+const uploadAndCloudinary = upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'uniIdFile', maxCount: 1 },
+]);
 
+// Processing uploaded files and pushing to Cloudinary
 const uploadAndProcessFiles = async (req, res, next) => {
-    const avatarFile = req.files.avatar ? req.files.avatar[0] : null;
-    const uniIdFile = req.files.uniIdFile ? req.files.uniIdFile[0] : null;
+    const avatarFile = req.files.avatar?.[0] || null;
+    const uniIdFile = req.files.uniIdFile?.[0] || null;
 
     try {
-        // Upload avatar file to Cloudinary if present
         if (avatarFile) {
             const result = await uploadToCloudinary(avatarFile);
-            req.body.avatarUrl = result.secure_url; // Store URL for further use
+            req.body.avatarUrl = result.secure_url;
         }
 
-        // Upload university ID file to Cloudinary if present
         if (uniIdFile) {
             const result = await uploadToCloudinary(uniIdFile);
-            req.body.uniIdUrl = result.secure_url; // Store URL for further use
+            req.body.uniIdUrl = result.secure_url;
         }
 
-        // Move to the next middleware or route handler
         next();
     } catch (error) {
         console.error('Cloudinary upload error:', error);

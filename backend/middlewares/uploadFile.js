@@ -1,15 +1,16 @@
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 import dotenv from "dotenv";
-import fs from "fs";
-import path from "path";
+// import fs from "fs"; // ❌ Not suitable for Vercel
+// import path from "path"; // ❌ Not suitable for Vercel
 
 dotenv.config();
 
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// const uploadDir = path.join(process.cwd(), "uploads"); // ❌
+// if (!fs.existsSync(uploadDir)) { // ❌
+//   fs.mkdirSync(uploadDir, { recursive: true }); // ❌
+// }
 
 let isCloudinaryConfigured = false;
 
@@ -37,16 +38,6 @@ if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
 }
 
 // ------------------ Multer Setup ------------------
-const storage = multer.diskStorage({
-  destination: (_, __, cb) => cb(null, uploadDir),
-  filename: (_, file, cb) => {
-    const sanitizedName = file.originalname
-      .replace(/\s+/g, "-")
-      .replace(/[^a-zA-Z0-9_.-]/g, "");
-    cb(null, `${Date.now()}-${sanitizedName}`);
-  },
-});
-
 const fileFilter = (_, file, cb) => {
   const allowedTypes = ["image/", "application/pdf", "video/"];
   if (allowedTypes.some((type) => file.mimetype.startsWith(type))) {
@@ -56,10 +47,27 @@ const fileFilter = (_, file, cb) => {
   }
 };
 
+// ✅ Replacing disk storage with Cloudinary storage
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    const fileType = file.mimetype;
+    let resource_type = "image";
+    if (fileType.startsWith("video/")) resource_type = "video";
+    if (fileType === "application/pdf") resource_type = "raw";
+
+    return {
+      folder: "books",
+      resource_type,
+      public_id: `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`,
+      format: undefined,
+    };
+  },
+});
+
 export const upload = multer({ storage, fileFilter });
 
 export const handleMulterError = (err, req, res, next) => {
-
   if (err instanceof multer.MulterError) {
     return res.status(400).json({ success: false, message: `Multer error: ${err.message}` });
   } else if (err) {
@@ -77,15 +85,15 @@ const getResourceType = (filePathOrId) => {
 };
 
 export const uploadToCloudinary = async (localFilePath, folder = "books") => {
-  if (!localFilePath || !fs.existsSync(localFilePath)) return null;
+  // if (!localFilePath || !fs.existsSync(localFilePath)) return null; // ❌
 
   try {
     if (!isCloudinaryConfigured) {
       console.log("ℹ️ Cloudinary not configured, using local file path");
-      const fileName = path.basename(localFilePath);
+      // const fileName = path.basename(localFilePath); // ❌
       return {
-        public_id: path.relative(process.cwd(), localFilePath),
-        secure_url: `/uploads/${fileName}`,
+        // public_id: path.relative(process.cwd(), localFilePath), // ❌
+        // secure_url: `/uploads/${fileName}`, // ❌
         local_file: true,
       };
     }
@@ -96,32 +104,32 @@ export const uploadToCloudinary = async (localFilePath, folder = "books") => {
       resource_type: resourceType,
     });
 
-    fs.unlinkSync(localFilePath); // Remove local file
+    // fs.unlinkSync(localFilePath); // ❌ Remove local file
     return { public_id: result.public_id, secure_url: result.secure_url, local_file: false };
   } catch (err) {
     console.error("Upload error:", err);
-    if (fs.existsSync(localFilePath)) {
-      const fileName = path.basename(localFilePath);
-      return {
-        public_id: path.relative(process.cwd(), localFilePath),
-        secure_url: `/uploads/${fileName}`,
-        local_file: true,
-        error: err.message,
-      };
-    }
-    return null;
+    // if (fs.existsSync(localFilePath)) { // ❌
+    //   const fileName = path.basename(localFilePath); // ❌
+    return {
+      // public_id: path.relative(process.cwd(), localFilePath), // ❌
+      // secure_url: `/uploads/${fileName}`, // ❌
+      local_file: true,
+      error: err.message,
+    };
+    // }
+    // return null;
   }
 };
 
 export const updateCloudinary = async (localFilePath, oldPublicId) => {
-  if (!localFilePath || !fs.existsSync(localFilePath)) return null;
+  // if (!localFilePath || !fs.existsSync(localFilePath)) return null; // ❌
 
   try {
     if (!isCloudinaryConfigured) {
-      const fileName = path.basename(localFilePath);
+      // const fileName = path.basename(localFilePath); // ❌
       return {
-        public_id: path.relative(process.cwd(), localFilePath),
-        secure_url: `/uploads/${fileName}`,
+        // public_id: path.relative(process.cwd(), localFilePath), // ❌
+        // secure_url: `/uploads/${fileName}`, // ❌
         local_file: true,
       };
     }
@@ -139,10 +147,10 @@ export const updateCloudinary = async (localFilePath, oldPublicId) => {
     return await uploadToCloudinary(localFilePath, folder);
   } catch (err) {
     console.error("Update error:", err);
-    const fileName = path.basename(localFilePath);
+    // const fileName = path.basename(localFilePath); // ❌
     return {
-      public_id: path.relative(process.cwd(), localFilePath),
-      secure_url: `/uploads/${fileName}`,
+      // public_id: path.relative(process.cwd(), localFilePath), // ❌
+      // secure_url: `/uploads/${fileName}`, // ❌
       local_file: true,
       error: err.message,
     };
@@ -154,8 +162,8 @@ export const deleteFromCloudinary = async (publicId) => {
 
   try {
     if (publicId.includes("uploads")) {
-      const filePath = path.join(process.cwd(), publicId);
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      // const filePath = path.join(process.cwd(), publicId); // ❌
+      // if (fs.existsSync(filePath)) fs.unlinkSync(filePath); // ❌
       return { success: true };
     }
 

@@ -6,19 +6,25 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,      
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Define multer-storage-cloudinary
+// Define Cloudinary storage
 const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
+    cloudinary,
     params: async (req, file) => {
-        let folderName = 'bookwise_user_files';
+        const folderName = 'bookwise_user_files';
+
+        let resource_type = 'raw';
+        if (file.mimetype.startsWith('image/')) resource_type = 'image';
+        else if (file.mimetype.startsWith('video/')) resource_type = 'video';
+
+        const extension = file.mimetype.split('/')[1] || 'bin';
 
         return {
             folder: folderName,
-            resource_type: file.mimetype.startsWith('image/') ? 'image' : 'raw',
-            format: file.mimetype.split('/')[1] || 'pdf',
+            resource_type,
+            format: extension,
             public_id: `${file.fieldname}-${Date.now()}`,
         };
     },
@@ -27,10 +33,11 @@ const storage = new CloudinaryStorage({
 // Initialize multer
 const upload = multer({ storage });
 
-// Middleware function to upload avatar and universityID
+// Middleware to upload avatar and university ID
 const uploadUser = upload.fields([
     { name: 'avatar', maxCount: 1 },
     { name: 'universityID', maxCount: 1 },
 ]);
 
 export default uploadUser;
+export { upload };
