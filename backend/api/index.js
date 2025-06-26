@@ -39,6 +39,8 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+
 // Routes
 app.use('/', homeRoutes);
 app.use('/auth', authRoutes);
