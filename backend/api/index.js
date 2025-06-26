@@ -5,7 +5,6 @@ import dotenv from 'dotenv';
 import connectToMongoose from '../db/db.js';
 
 dotenv.config();
-
 import homeRoutes from '../routes/Home.js';
 import authRoutes from '../routes/Auth.js';
 import bookRoutes from '../routes/Book.js';
