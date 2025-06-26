@@ -3,16 +3,17 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import connectToMongoose from '../db/db.js';
+import serverless from 'serverless-http';
 
 dotenv.config();
+
+// Import routes
 import homeRoutes from '../routes/Home.js';
 import authRoutes from '../routes/Auth.js';
 import bookRoutes from '../routes/Book.js';
 import userRoutes from '../routes/User.js';
 
 const app = express();
-
-// Connect to MongoDB
 connectToMongoose();
 
 const allowedOrigins = [
@@ -39,8 +40,9 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
-app.get('/favicon.ico', (req, res) => res.status(204).end());
-app.get('/favicon.png', (req, res) => res.status(204).end());
+// Handle favicons
+app.get('/favicon.ico', (_, res) => res.status(204).end());
+app.get('/favicon.png', (_, res) => res.status(204).end());
 
 // Routes
 app.use('/', homeRoutes);
@@ -53,5 +55,5 @@ app.use((req, res) => {
     res.status(404).json({ message: '❌ Route not found' });
 });
 
-// ✅ Export app directly
-export default app;
+// ✅ Vercel-compatible export
+export const handler = serverless(app);
