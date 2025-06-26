@@ -6,7 +6,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Route Imports
 import homeRoutes from './routes/Home.js';
 import authRoutes from './routes/Auth.js';
 import bookRoutes from './routes/Book.js';
@@ -18,29 +17,27 @@ const PORT = process.env.SERVER_PORT || 4000;
 // Connect to MongoDB
 connectToMongoose();
 
-const ADMIN_URL = process.env.ADMIN_URL;
-const MAIN_URL = process.env.MAIN_URL || "https://bookwise-main.vercel.app";
+// CORS Setup
+const ADMIN_URL = process.env.ADMIN_URL || 'https://bookwise-admin.vercel.app';
+const MAIN_URL = process.env.MAIN_URL || 'https://bookwise-main.vercel.app';
 
-// Middleware
-const allowedOrigins = [
-    `${ADMIN_URL}`,
-    `${MAIN_URL}`,
-];
+const allowedOrigins = [ADMIN_URL, MAIN_URL];
 
-console.log("Main URL : ", MAIN_URL);
-console.log("Admin URL : ", ADMIN_URL);
+console.log('✅ Allowed Origins:', allowedOrigins);
 
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
+            console.warn('❌ Blocked CORS origin:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true
+    credentials: true,
 }));
 
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
@@ -50,7 +47,7 @@ app.use('/auth', authRoutes);
 app.use('/book', bookRoutes);
 app.use('/user', userRoutes);
 
-// Optional: Handle unknown routes
+// Fallback Route
 app.use((req, res) => {
     res.status(404).json({ message: '❌ Route not found' });
 });
