@@ -1,9 +1,8 @@
 import express from 'express';
-import serverless from 'serverless-http';
 import cors from 'cors';
-import connectToMongoose from '../db/db.js';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import connectToMongoose from '../db/db.js';
 
 dotenv.config();
 
@@ -14,7 +13,7 @@ import userRoutes from '../routes/User.js';
 
 const app = express();
 
-// Connect to MongoDB (run only once in serverless environment)
+// Connect to MongoDB
 connectToMongoose();
 
 const allowedOrigins = [
@@ -37,8 +36,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight
-
+app.options('*', cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -48,10 +46,10 @@ app.use('/auth', authRoutes);
 app.use('/book', bookRoutes);
 app.use('/user', userRoutes);
 
-// Fallback Route
+// Fallback
 app.use((req, res) => {
     res.status(404).json({ message: '❌ Route not found' });
 });
 
-// Export handler for Vercel
-export default serverless(app);
+// ✅ Export app directly
+export default app;
