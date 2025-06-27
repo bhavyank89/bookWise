@@ -62,6 +62,7 @@ app.use((req, res) => {
     res.status(404).json({ message: '❌ Route not found' });
 });
 
-// ✅ Vercel-compatible export
-import serverless from 'serverless-http';
-export const handler = serverless(app); // ✅
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+});
