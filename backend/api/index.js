@@ -44,7 +44,10 @@ app.get('/favicon.ico', (_, res) => res.status(204).end());
 app.get('/favicon.png', (_, res) => res.status(204).end());
 
 // Routes
-app.use('/', homeRoutes);
+// app.use('/', homeRoutes);
+app.use('/', (req, res) => {
+    res.status(200).send("Hello bookwise");
+});
 app.use('/auth', authRoutes);
 app.use('/book', bookRoutes);
 app.use('/user', userRoutes);
