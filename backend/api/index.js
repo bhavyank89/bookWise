@@ -64,4 +64,4 @@ app.use((req, res) => {
 
 // ✅ Vercel-compatible export
 import serverless from 'serverless-http';
-export default serverless(app);
+export const handler = serverless(app); // ✅
