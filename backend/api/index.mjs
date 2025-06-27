@@ -2,15 +2,15 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import connectToMongoose from '../db/db.js';
+import connectToMongoose from './db/db.js';
 
 dotenv.config();
 
 // Import routes
-import homeRoutes from '../routes/Home.js';
-import authRoutes from '../routes/Auth.js';
-import bookRoutes from '../routes/Book.js';
-import userRoutes from '../routes/User.js';
+import homeRoutes from './routes/Home.js';
+import authRoutes from './routes/Auth.js';
+import bookRoutes from './routes/Book.js';
+import userRoutes from './routes/User.js';
 
 const app = express();
 connectToMongoose();
@@ -64,4 +64,4 @@ app.use((req, res) => {
 
 // ✅ Vercel-compatible export
 import serverless from 'serverless-http';
-export const handler = serverless(app);
+export default serverless(app);

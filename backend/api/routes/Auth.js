@@ -1,11 +1,11 @@
 import express from 'express';
-import User from '../models/User.js';
+import User from '../api/models/User.js';
 import { body, validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import uploadUser from '../middlewares/uploadUser.js';
-import fetchUser from '../middlewares/FetchUser.js';
-import { uploadAndCloudinary, uploadAndProcessFiles } from '../middlewares/updateUser.js';
+import uploadUser from '../api/middlewares/uploadUser.js';
+import fetchUser from '../api/middlewares/FetchUser.js';
+import { uploadAndCloudinary, uploadAndProcessFiles } from '../api/middlewares/updateUser.js';
 import { v2 as cloudinary } from 'cloudinary';
 import dotenv from 'dotenv';
 

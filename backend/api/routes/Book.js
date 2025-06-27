@@ -1,6 +1,6 @@
 import express from "express";
 import fs from "fs";
-import fetchUser from '../middlewares/FetchUser.js';
+import fetchUser from '../api/middlewares/FetchUser.js';
 
 import {
   upload,
@@ -8,9 +8,9 @@ import {
   deleteFromCloudinary,
   updateCloudinary,
   handleMulterError
-} from "../middlewares/uploadFile.js";
-import Book from "../models/Book.js";
-import User from "../models/User.js";
+} from "../api/middlewares/uploadFile.js";
+import Book from "../api/models/Book.js";
+import User from "../api/models/User.js";
 
 const router = express.Router();
 
