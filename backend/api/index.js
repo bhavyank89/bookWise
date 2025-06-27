@@ -3,7 +3,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import connectToMongoose from '../db/db.js';
-import serverless from 'serverless-http';
 
 dotenv.config();
 
@@ -56,4 +55,4 @@ app.use((req, res) => {
 });
 
 // ✅ Vercel-compatible export
-export const handler = serverless(app);
+export default app;
