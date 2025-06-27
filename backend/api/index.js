@@ -57,5 +57,11 @@ app.use((req, res) => {
     res.status(404).json({ message: '❌ Route not found' });
 });
 
+// Fallback
+app.use((req, res) => {
+    res.status(404).json({ message: '❌ Route not found' });
+});
+
 // ✅ Vercel-compatible export
-export default app;
+import serverless from 'serverless-http';
+export const handler = serverless(app);
