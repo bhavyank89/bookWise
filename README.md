@@ -14,6 +14,13 @@ Built using **React (Vite)**, **Tailwind CSS**, **Node.js**, **Express.js**, and
 
 ---
 
+## 🗃️ Github repo
+
+* **Admin Panel**: [github.com/bhavyank89/bookWise-Admin](https://github.com/bhavyank89/bookWise-Admin)
+* **Main Panel**: [github.com/bhavyank89/bookWise](https://github.com/bhavyank89/bookWise)
+
+---
+
 ## ✨ Features
 
 * 🔐 Admin Login & Signup
