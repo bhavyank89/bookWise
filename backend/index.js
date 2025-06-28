@@ -19,6 +19,8 @@ connectToMongoose();
 const allowedOrigins = [
     process.env.MAIN_URL || 'https://bookwise-main.vercel.app',
     process.env.ADMIN_URL || 'https://bookwise-admin.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
 ];
 
 const corsOptions = {
