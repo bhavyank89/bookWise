@@ -56,14 +56,19 @@ const storage = new CloudinaryStorage({
     if (fileType.startsWith("video/")) resource_type = "video";
     if (fileType === "application/pdf") resource_type = "raw";
 
+    // Get book title from request body and sanitize it
+    const bookTitle = req.body.title || "untitled-book";
+    const safeTitle = bookTitle.trim().toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/gi, "");
+
     return {
-      folder: "books",
+      folder: `books/${safeTitle}`,
       resource_type,
       public_id: `${Date.now()}-${file.originalname.replace(/\s+/g, "-")}`,
       format: undefined,
     };
   },
 });
+
 
 export const upload = multer({ storage, fileFilter });
 
