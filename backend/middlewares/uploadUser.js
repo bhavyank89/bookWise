@@ -13,7 +13,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary,
     params: async (req, file) => {
-        const folderName = 'bookwise_user_files';
+        const folderName = 'user';
 
         let resource_type = 'raw';
         if (file.mimetype.startsWith('image/')) resource_type = 'image';
